@@ -1,0 +1,348 @@
+=encoding iso-8859-1
+
+=head1 NOM
+
+perlpod - Plain old documentation («E<nbsp>bonne vieille documentationE<nbsp>»)
+
+=head1 DESCRIPTION
+
+Un traducteur pod-vers-n'importe quoi lit un fichier pod paragraphe par
+paragraphe, et le traduit dans le format de sortie approprié. Il existe trois
+genres de paragraphesE<nbsp>:
+
+L<mot pour mot|/"Paragraphe Mot pour Mot">, L<de commande|/"Paragraphe de
+Commande">, et L<texte ordinaire|/"Bloc de Texte Ordinaire">.
+
+=head2 Paragraphe mot pour mot
+
+Un paragraphe mot pout mot (verbatim) est distingué par son indentation
+(c'est-à-dire qu'il commence par une espace ou une tabulation). Il devrait
+être reproduit exactement, avec les tabulations supposées être sur 8
+colonnes. Il n'y a pas de séquences d'échappement spéciales pour le formatage,
+vous ne pouvez donc pas mettre en italique ni quoi que ce soit.  Un \ veut
+dire \, et rien d'autre.
+
+=head2 Paragraphe de commande
+
+Tous les paragraphes de commande commencent par «E<nbsp>=E<nbsp>», suivi par
+un identificateur, suivi par un texte arbitraire que la commande peut utilise
+de la façon qui lui plaît.  Les commandes reconnues actuellement sont
+
+    =head1 titre
+    =head2 titre
+    =item texte
+    =over N
+    =back
+    =cut
+    =pod
+    =for X
+    =begin X
+    =end X
+
+=over 4
+
+=item =pod
+
+=item =cut
+
+La directive «E<nbsp>=podE<nbsp>» ne fait rien d'autre que dire au compilateur
+de suspendre son analyse du code jusqu'au prochain «E<nbsp>=cutE<nbsp>». C'est
+utile pour ajouter un nouveau paragraphe à la doc si vous mélangez beaucoup le
+code et le pod.
+
+=item =head1
+
+=item =head2
+
+Head1 et head2 produisent des titres de premier et de second niveau, avec le
+texte situé dans le même paragraphe que la directive «E<nbsp>=headnE<nbsp>»
+formant la description du titre.
+
+=item =over
+
+=item =back
+
+=item =item
+
+Item, over, et back ont besoin d'un peu plus d'explicationsE<nbsp>:
+«E<nbsp>=overE<nbsp>» débute une section spécifiquement en vue de la création
+d'une liste utilisant des commandes «E<nbsp>=itemE<nbsp>».  Utilisez
+«E<nbsp>=backE<nbsp>» à la fin de votre liste pour la terminer. Vous voudrez
+probablement donner «E<nbsp>4E<nbsp>» comme nombre à «E<nbsp>=overE<nbsp>»,
+car certains formateurs utiliseront ceci pour l'indentation. Ceci devrait
+probablement être une valeur par défaut. Notez aussi qu'il y a des règles de
+base dans l'usage de =itemE<nbsp>: ne les utilisez pas hors d'un bloc
+=over/=back, utilisez-en au moins un à l'intérieur d'un bloc =over/=back, vous
+n'êtes pas _obligé_ d'inclure le =back si la liste continue jusqu'à la fin du
+document, et, ceci étant peut-être le plus important, gardez les items
+cohérentsE<nbsp>: utilisez soit «E<nbsp>=item *E<nbsp>» pour tous, pour
+produire des puces, ou bien utilisez «E<nbsp>=item 1.E<nbsp>», «E<nbsp>=item
+2.E<nbsp>», etc., pour produire des listes numérotées, ou bien utilisez
+«E<nbsp>=item fooE<nbsp>», «E<nbsp>=item barE<nbsp>», etc., i.e., des choses
+qui n'ont rien à voir avec des puces ou des numéros. Si vous commencez avec
+des puces ou des numéros, gardez-les, car beaucoup de formateurs utiliseront
+le type du premier «E<nbsp>=itemE<nbsp>» pour décider comment formater toute
+la liste.
+
+=item =for
+
+=item =begin
+
+=item =end
+
+For, begin, et end vous permettent d'inclure des sections qui ne sont pas
+interprétées comme du texte pod, mais passées directement à des formateurs
+particuliers. Un formateur qui peut utiliser ce format traitera la section,
+qui sera complètement ignorée sinon. La directive "=for" spécifie que la
+totalité du prochain paragraphe est dans le format indiqué par le premier mot
+après le «E<nbsp>=forE<nbsp>», comme ceciE<nbsp>:
+
+ =for html <br>
+  <p> This is a raw HTML paragraph </p>
+
+La paire de commandes «E<nbsp>=beginE<nbsp>» et «E<nbsp>=endE<nbsp>»
+fonctionne de façon très similaires à «E<nbsp>=forE<nbsp>», mais au lieu de
+n'accepter seulement qu'un seul paragraphe, tout le texte depuis le
+«E<nbsp>=beginE<nbsp>» jusqu'au paragraphe ayant un «E<nbsp>=endE<nbsp>»
+assorti est traité comme d'un format particulier.
+
+Voici des exemples de l'utilisation de ceciE<nbsp>:
+
+ =begin html
+
+ <br>Figure 1.<IMG SRC="figure1.png"><br>
+
+ =end html
+
+ =begin text
+
+   ---------------
+   |  foo        |
+   |        bar  |
+   ---------------
+
+ ^^^^ Figure 1. ^^^^
+
+ =end text
+
+Certains noms de format que les formateurs sont connus pour accepter
+actuellement incluent «E<nbsp>roffE<nbsp>», «E<nbsp>manE<nbsp>»,
+«E<nbsp>latexE<nbsp>», «E<nbsp>texE<nbsp>», «E<nbsp>textE<nbsp>», et
+«E<nbsp>htmlE<nbsp>» (certains formateurs traiteront certains de ceux-ci comme
+des synonymes).
+
+Et n'oubliez pas, en utilisant toute commande, que son effet dure jusqu'à la
+fin du B<paragraphe>, pas de la ligne. D'où dans les exemples ci-dessus, les
+lignes vides que vous pouvez voir après chaque commande pour terminer son
+paragraphe.
+
+Des exemples de listes incluentE<nbsp>:
+
+ =over 4
+
+ =item *
+
+ First item
+
+ =item *
+
+ Second item
+
+ =back
+
+ =over 4
+
+ =item Foo()
+
+ Description of Foo function
+
+ =item Bar()
+
+ Description of Bar function
+
+ =back
+
+=back
+
+=head2 Bloc de texte ordinaire
+
+Il sera plein, et peut-être même justifié. Certaines séquences internes sont
+reconnues à la fois ici et dans les commandesE<nbsp>:
+
+    I<texte>    Texte en italique, utilisé pour l'accentuation ou les variables
+    B<texte>    Texte en gras, utilisé pour les options et les programmes
+    S<texte>    Le texte contient des espaces insécables
+    C<code>     Code littéral
+    L<nom>      Un lien (référence croisée) vers nom
+		    L<nom>		page de manuel
+		    L<nom/ident>	élément dans la page de manuel
+		    L<nom/"sec">	section dans une autre page de manuel
+		    L<"sec">		section dans cette page de manuel
+					(les guillemets sont optionels)
+		    L</"sec">		idem
+		la même chose que ci-dessus mais seul 'texte' est utilisé comme sortie.
+		(Le Texte ne peut pas contenir les caractères '/' et '|',
+		et devrait contenir des '<' ou des '>' appariés)
+		    L<texte|nom>
+		    L<texte|nom/ident>
+		    L<texte|nom/"sec">
+		    L<texte|"sec">
+		    L<texte|/"sec">
+
+    F<file>     Utilisé pour les noms de fichier
+    X<index>    Une entrée d'index
+    Z<>         Un caractère de largeur nulle
+    E<escape>   Un caractère nommé (très similaire aux séquences d'échappement HTML)
+		    E<lt>		Un < litteral
+		    E<gt>		Un > litteral
+		    E<sol>		Un / litteral
+		    E<verbar>		Un | litteral
+		    (Ceux-ci sont optionnels sauf dans d'autres séquences internes
+		     et quand ils sont précédés d'une lettre majuscule)
+		    E<n>		Caractère numéro n (probablement en ASCII)
+    	    	    E<html>		Une entité HTML non numérique, comme
+					E<Agrave>
+
+La plupart du temps, vous n'aurez besoin que d'un seul jeu de crochets pour
+délimiter le début et la fin des séquences internes. Toutefois vous voudrez
+parfois mettre un signe supérieur à dans une séquence.  C'est particulièrement
+courant lorsqu'on utilise une séquence pour fournir une fonte différente pour
+un petit bout de code. Comme pour toute chose en Perl, il y a plus d'une façon
+de le faire. L'une d'elle est de simplement protéger le crochet fermant en
+utilisant une séquence C<E>E<nbsp>:
+
+    C<$a E<lt>=E<gt> $b>
+
+Ce qui produiraE<nbsp>: "C<$a E<lt>=E<gt> $b>"
+
+Une méthode plus lisible, et peut-etre plus «E<nbsp>simpleE<nbsp>», est
+d'utiliser une autre paire de délimiteurs qui n'ont pas besoin d'un
+«E<nbsp>>E<nbsp>» pour leur protection. À partir de perl5.5.660, les crochets
+doublés («E<nbsp><<E<nbsp>» et «E<nbsp>>>E<nbsp>») peuvent etre utilisés I<si
+et seulement si des espaces suivent immédiatement le crochet ouvrant et
+précèdent le crochet fermantE<nbsp>!> Par exemple, ce qui suit
+fonctionneraE<nbsp>:
+
+    C<< $a <=> $b >>
+
+En fait, vous pouvez utiliser autant de crochets répétés que vous le désirez
+tant qu'il y en a autant dans les délimiteurs ouvrants et fermants, et que
+vous vous assurez que l'espace suit immédiatement le dernier «E<nbsp><E<nbsp>»
+du délimiteur ouvrant, et précède immédiatement le premier «E<nbsp>>E<nbsp>»
+du délimiteur fermant. Ce qui suit fonctionnera donc aussiE<nbsp>:
+
+    C<<< $a <=> $b >>>
+    C<<<< $a <=> $b >>>>
+
+C'est actuellement supporté par pod2text (Pod::Text), pod2man (Pod::Man), et
+tout autre traducteur pod2xxx et Pod::Xxxx qui utilise Pod::Parser version
+1.093 ou supérieure.
+
+=head2 Le dessein
+
+C'est cela. Le dessein est la simplicité, pas la puissance. Je voulais que les
+paragraphes aient l'air de paragraphes (format de bloc), pour qu'ils
+ressortent visuellement, et pour que je puisse les faire passer facilement à
+travers fmt pour les reformater (c'est F7 dans ma version de B<vi>). Je
+voulais que le traducteur (et pas moi) s'inquiète de savoir si " ou ' est une
+apostrophe ou un accent grave dans le texte plein, et je voulais qu'il laisse
+les apostrophe tranquilles, nom d'une pipe, en mode mot pour mot, pour que je
+puisse l'aspirer dans un programme qui marche, le décaler de 4 espaces, et
+l'imprimer, euh, mot pour mot. Et probablement dans une fonte à chasse fixe.
+
+En particulier, vous pouvez laisser des choses comme ceci mot pour mot dans
+votre texteE<nbsp>:
+
+    Perl
+    FILEHANDLE
+    $variable
+    function()
+    manpage(3r)
+
+Sans doute quelques commandes ou séquences supplémentaires auront besoin
+d'être ajoutées en cours de route, mais je m'en suis étonnemment bien sorti
+avec juste celles-ci.
+
+Notez que je ne proclame pas du tout que ceci est suffisant pour produire un
+livre. J'essaye juste de faire une source commune à l'épreuve des idiots pour
+nroff, TeX, et les autres langages de marquage, tels qu'ils sont utilisés pour
+la documentation en ligne. Des traducteurs existent pour B<pod2man> (ceci est
+pour nroff(1) et troff(1)), B<pod2text>, B<pod2html>, B<pod2latex>, et
+B<pod2fm>.
+
+=head2 Incorporer du pod dans les modules Perl
+
+Vous pouvez inclure de la documentation pod dans vos scripts Perl. Commencez
+votre documentation par une commande «E<nbsp>=head1E<nbsp>» au début, et
+terminez-la par une commande «E<nbsp>=cutE<nbsp>». Perl ignorera le texte en
+pod. Voyez n'importe quel module de bibliothèque fourni comme exemple. Si vous
+allez mettre votre pod à la fin du fichier, et si vous utilisez un __END__ ou
+un __DATA__ comme marque de fin, assurez-vous de mettre une ligne vide à cet
+endroit avant la première directive pod.
+
+    __END__
+
+    =head1 NAME
+
+    modern - I am a modern module
+
+Si vous n'aviez pas eu cette ligne vide à cet endroit, alors les traducteurs
+ne l'auraient pas vue.
+
+=head2 Pièges courants de pod
+
+=over 4
+
+=item *
+
+Les traducteurs Pod requièrent habituellement que les paragraphes soient
+séparés par des lignes complètement vides. Si vous avez une ligne apparemment
+vide contenant des espaces, Cela peut provoquer un formatage étrange.
+
+=item *
+
+Les traducteurs ajouteront généralement des mots autour d'un lien LE<lt>E<gt>,
+de façon que C<LE<lt>foo(1)E<gt>> devienne «E<nbsp>the I<foo>(1)
+manpageE<nbsp>», par exemple (voir B<pod2man> pour des détails). Ainsi, vous
+ne devriez pas écrire de choses C<the LE<lt>fooE<gt> manpage>, si vous voulez
+que le document traduit se lise de façon sensée.
+
+Si vous avez besoin du contrôle total du texte utilisé pour un lien dans la
+sortie, utilisez la forme LE<lt>show this text|fooE<gt> à la place.
+
+=item *
+
+La commande B<podchecker> est fournie pour rechercher les erreurs et les
+avertissements dans la syntaxe pod. Elle vérifie par exemple les lignes
+complètement blanches dans les segments pod et les séquences d'échappement
+inconnues. Il est toujours conseillé de faire passer votre pod dans un ou
+plusieurs traducteurs et de relire le résultat, ou de l'imprimer et de relire
+cela. Certains des problèmes trouvés peuvent être des bugs dans le traducteur,
+que vous pourriez ou non désirer contourner.
+
+=back
+
+=head1 VOIR AUSSI
+
+L<pod2man>,  L<perlsyn/"POD : Documentation Enfouie">, L<podchecker>
+
+=head1 AUTEUR
+
+Larry Wall
+
+=head1 TRADUCTION
+
+=head2 Version
+
+Cette traduction française correspond à la version anglaise distribuée avec
+perl 5.6.0.  Pour en savoir plus concernant ces traductions, consultez
+L<http://perl.enstimac.fr/>.
+
+=head2 Traducteur
+
+Roland Trique <F<roland.trique@free.fr>>
+
+=head2 Relecture
+
+Gérard Delafond
+

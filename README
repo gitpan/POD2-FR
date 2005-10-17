@@ -1,0 +1,39 @@
+POD2::FR version 0.01
+=====================
+
+POD2::FR - French translation of Perl core documentation.
+
+See 'perldoc POD2::FR' for more info.
+
+See <http://perl.enstimac.fr> for more details about translation.
+
+CHANGES FROM PREVIOUS VERSION
+
+	+ first public release on CPAN.
+
+See 'Changes' file for complete history revisions.
+
+INSTALLATION
+
+To install this module type the following:
+
+   perl Makefile.PL
+   make
+   make test
+   make install
+
+DEPENDENCIES
+
+This module doesn't require other modules and libraries.
+
+AUTHORS
+
+Paul Gaborit and all translators.
+
+COPYRIGHT AND LICENCE
+
+Copyright (C) 2004,2005 Paul Gaborit.
+
+This library is free software; you can redistribute it and/or modify
+it under the same terms as Perl itself.
+
