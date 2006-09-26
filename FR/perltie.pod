@@ -1,0 +1,914 @@
+=encoding iso-8859-1
+
+=head1 NAME/NOM
+
+perltie - Comment cacher un objet d'une classe derrière une simple variable
+
+=head1 SYNOPSIS
+
+ tie VARIABLE, CLASSNAME, LIST
+
+ $object = tied VARIABLE
+
+ untie VARIABLE
+
+=head1 DESCRIPTION
+
+Avant la version 5.0 de Perl, un programmeur pouvait utiliser la fonction
+dbmopen() pour connecter magiquement une table de hachage %HASH de son
+programme à une base de données sur disque au format standard Unix dbm(3x). En
+revanche, son Perl était construit avec l'une ou l'autre des implémentations
+de la bibliothèque dbm mais pas les deux et il n'était pas possible d'étendre
+ce mécanisme à d'autres packages ou à d'autres types de variables.
+
+C'est maintenant possible.
+
+La fonction tie() relie une variable à une classe (ou un package) qui fournit
+l'implémentation des méthodes permettant d'accéder à cette variable. Une fois
+ce lien magique établit, l'accès à cette variable déclenche automatiquement
+l'appel aux méthodes de la classe choisie. La complexité de la classe est
+cachée derrière des appels magiques de méthodes. Les noms de ces méthodes sont
+entièrement en MAJUSCULES. C'est une convention pour signifier que Perl peut
+appeler ces méthodes implicitement plutôt qu'explicitement -- exactement comme
+les fonctions BEGIN() et END().
+
+Dans l'appel de tie(), C<VARIABLE> est le nom de la variable à
+relier. C<CLASSNAME> est le nom de la classe qui implémente les objets du bon
+type. Tous les autres arguments dans C<LIST> sont passés au constructeur
+approprié pour cette classe -- à savoir TIESCALAR(), TIEARRAY(), TIEHASH(), ou
+TIEHANDLE(). (Ce sont par exemple les arguments à passer à la fonction C
+dbminit().) L'objet retourné par la méthode "new" est aussi retourné par la
+fonction tie() ce qui est pratique pour accéder à d'autres méthodes de la
+classe C<CLASSNAME>. (Vous n'avez pas besoin de retourner une référence vers
+un vrai "type" (e.g. HASH ou C<CLASSNAME>) tant que c'est un objet
+correctement béni -- par la fonction bless().) Vous pouvez aussi retrouver une
+référence vers l'objet sous-jacent en utilisant la fonction tied().
+
+À la différence de dbmopen(), la fonction tie() ne fera pas pour vous un
+C<use> ou un C<require> d'un module -- vous devez le faire vous-même
+explicitement.
+
+=head2 Les scalaires liés (par tie())
+
+Une classe qui implémente un scalaire lié devrait définir les méthodes
+S<suivantes :> TIESCALAR, FETCH, STORE et éventuellement DESTROY.
+
+Jetons un oeil à chacune d'elle en utilisant comme exemple une classe liée
+(par tie()) qui permet à l'utilisateur de S<faire :>
+
+    tie $his_speed, 'Nice', getppid();
+    tie $my_speed,  'Nice', $$;
+
+À partir de maintenant, à chaque accès à l'une de ces variables, la priorité
+courante du système est retrouvée et retournée. Si ces variables sont
+modifiées alors la priorité du process change.
+
+Nous utilisons la classe BSD::Resource de Jarkko Hietaniemi <F<jhi@iki.fi>>
+(non fournie) pour accéder aux constantes systèmes PRIO_PROCESS, PRIO_MIN, et
+PRIO_MAX ainsi qu'aux appels systèmes getpriority() et setpriority(). Voici le
+préambule de la S<classe :>
+
+    package Nice;
+    use Carp;
+    use BSD::Resource;
+    use strict;
+    $Nice::DEBUG = 0 unless defined $Nice::DEBUG;
+
+=over
+
+=item TIESCALAR classname, LIST
+
+C'est le constructeur de la classe. Cela signifie qu'il est supposé retourné
+une référence bénie (par bless()) vers un nouveau scalaire (probablement
+anonyme) qu'il a créé. Par S<exemple :>
+
+    sub TIESCALAR {
+        my $class = shift;
+        my $pid = shift || $$; # 0 means me
+
+        if ($pid !~ /^\d+$/) {
+            carp "Nice::Tie::Scalar got non-numeric pid $pid" if $^W;
+            return undef;
+        }
+
+        unless (kill 0, $pid) { # EPERM or ERSCH, no doubt
+            carp "Nice::Tie::Scalar got bad pid $pid: $!" if $^W;
+            return undef;
+        }
+
+        return bless \$pid, $class;
+    }
+
+Cette classe liée a choisi de retourner une erreur plutôt que de lancer une
+exception si son constructeur échoue. Bien que ce soit la manière dont
+dbmopen() fonctionne, d'autres classes peuvent très bien être moins
+tolérantes. La classe regarde tout de même la variable C<$^W> pour savoir si
+elle doit émettre un peu de bruit ou non.
+
+=item FETCH this
+
+Cette méthode se déclenche chaque fois qu'on accède (en lecture) à une
+variable liée. Elle ne prend aucun argument mis à part une référence qui est
+l'objet qui représente le scalaire à utiliser. Puisque dans notre cas nous
+utilisons une simple référence SCALAIRE comme objet du scalaire lié, un appel
+à $$self permet à la méthode d'obtenir la valeur réelle stockée. Dans notre
+exemple ci-dessous, cette valeur réelle est l'ID du process que nous avons lié
+à notre variable.
+
+    sub FETCH {
+        my $self = shift;
+        confess "wrong type" unless ref $self;
+        croak "usage error" if @_;
+        my $nicety;
+        local($!) = 0;
+        $nicety = getpriority(PRIO_PROCESS, $$self);
+        if ($!) { croak "getpriority failed: $!" }
+        return $nicety;
+    }
+
+Cette fois, nous avons décidé d'exploser (en générant une exception) si
+l'obtention de la priorité échoue -- il n'y a aucun autre moyen pour retourner
+une erreur et c'est probablement la meilleure chose à faire.
+
+=item STORE this, value
+
+Cette méthode est appelée à chaque fois que la variable liée est modifiée
+(affectée). Derrière sa propre référence, elle attend un (et un seul) argument
+-- la nouvelle valeur que l'utilisateur essaye d'affecter.
+
+    sub STORE {
+        my $self = shift;
+        confess "wrong type" unless ref $self;
+        my $new_nicety = shift;
+        croak "usage error" if @_;
+
+        if ($new_nicety < PRIO_MIN) {
+            carp sprintf
+              "WARNING: priority %d less than minimum system priority %d",
+                  $new_nicety, PRIO_MIN if $^W;
+            $new_nicety = PRIO_MIN;
+        }
+
+        if ($new_nicety > PRIO_MAX) {
+            carp sprintf
+              "WARNING: priority %d greater than maximum system priority %d",
+                  $new_nicety, PRIO_MAX if $^W;
+            $new_nicety = PRIO_MAX;
+        }
+
+        unless (defined setpriority(PRIO_PROCESS, $$self, $new_nicety)) {
+            confess "setpriority failed: $!";
+        }
+        return $new_nicety;
+    }
+
+=item DESTROY this
+
+Cette méthode est appelée lorsque la variable liée doit être détruite. Comme
+pour les autres classes d'objets, une telle méthode est rarement nécessaire
+parce que Perl désalloue automatiquement pour vous la mémoire associé à des
+objets moribonds -- ce n'est pas le cas de C++. Nous utilisons donc une
+méthode DESTROY ici uniquement pour débugguer.
+
+    sub DESTROY {
+        my $self = shift;
+        confess "wrong type" unless ref $self;
+        carp "[ Nice::DESTROY pid $$self ]" if $Nice::DEBUG;
+    }
+
+=back
+
+C'est tout ce qu'il y a à voir. C'est même un peu plus parce que nous avons
+fait des jolies petites choses dans un souci de complétude, robustesse et,
+plus généralement, d'esthétique. Des classes plus simples liant un scalaire
+sont certainement faisables.
+
+=head2 Les tableaux liés (par tie())
+
+Une classe qui implémente un tableau lié ordinaire devrait définir les
+méthodes S<suivantes :> TIEARRAY, FETCH, STORE, FETCHSIZE, STORESIZE et
+éventuellement DESTROY.
+
+Les méthodes FETCHSIZE et STORESIZE sont nécessaires pour pouvoir fournir
+C<$#array> et autres fonctionnalités équivalentes comme C<scalar(@array)>.
+
+Les méthodes POP, PUSH, SHIFT, UNSHIFT, SPLICE, DELETE et EXISTS sont
+indispensables si l'opérateur Perl ayant le même nom (mais en minuscules) doit
+être appliqué aux tableaux liés. La classe B<Tie::Array> peut être utilisée
+comme classe de base pour implémenter ces méthodes à partir des cinq méthodes
+initiales de base. Les implémentations par défaut de DELETE et de EXISTS dans
+B<Tie::Array> appellent simplement C<croak>.
+
+De plus, la méthode EXTEND sera appelée quand perl devra pré-étendre
+l'allocation du tableau.
+
+Cela signifie que, maintenant, les tableaux liés sont complets. L'exemple
+ci-dessous doit donc être mis à jour pour l'illustrer. (La documentation de
+B<Tie::Array> est plus complète.)
+
+Dans cette partie, nous implémenterons un tableau dont les indices sont fixés
+lors sa création. Si vous essayez d'accéder à des indices en dehors des
+limites, vous recevrez une exception. Par S<exemple :>
+
+    require Bounded_Array;
+    tie @ary, 'Bounded_Array', 2;
+    $| = 1;
+    for $i (0 .. 10) {
+        print "setting index $i: ";
+        $ary[$i] = 10 * $i;
+        $ary[$i] = 10 * $i;
+        print "value of elt $i now $ary[$i]\n";
+    }
+
+Le code en préambule de cette classe est le S<suivant :>
+
+    package Bounded_Array;
+    use Carp;
+    use strict;
+
+=over
+
+=item TIEARRAY classname, LIST
+
+C'est le constructeur de la classe. Cela signifie qu'il est supposé retourner
+une référence bénie (par bless()) à travers laquelle on pourra accéder au
+nouveau tableau (probablement une référence à un TABLEAU anonyme)
+
+Dans notre exemple, juste pour montrer qu'il n'est pas I<VRAIMENT> nécessaire
+de retourner une référence vers un TABLEAU, nous avons choisi une référence à
+une HASHTABLE pour représenter notre objet. Cette HASHTABLE s'élabore
+exactement comme un type d'enregistrement S<générique :> le champ C<{BOUND}>
+stockera la borne maximum autorisée et le champ C<{ARRAY}> contiendra la
+référence vers le vrai TABLEAU. Si quelqu'un en dehors de la classe tente de
+déréférencer l'objet retourné (croyant sans doute avoir à faire à une
+référence vers un TABLEAU), cela ne fonctionnera pas. Tout cela pour vous
+montrer que vous devriez respecter le vie privée des objets.
+
+    sub TIEARRAY {
+        my $class = shift;
+        my $bound = shift;
+        confess "usage: tie(\@ary, 'Bounded_Array', max_subscript)"
+            if @_ || $bound =~ /\D/;
+        return bless {
+            BOUND => $bound,
+            ARRAY => [],
+        }, $class;
+    }
+
+=item FETCH this, index
+
+Cette méthode est appelée à chaque fois qu'on accède (en lecture) à un élément
+individuel d'un tableau lié. Elle prend un argument en plus de sa propre
+S<référence :> l'index de la valeur à laquelle on veut accéder.
+
+    sub FETCH {
+      my($self,$idx) = @_;
+      if ($idx > $self->{BOUND}) {
+        confess "Array OOB: $idx > $self->{BOUND}";
+      }
+      return $self->{ARRAY}[$idx];
+    }
+
+Comme vous avez pu le remarquer le nom de la méthode FETCH (et al.) est le
+même pour tous les accès bien que les constructeurs ont des noms différents
+(TIESCALAR vs TIEARRAY). En théorie, une même classe peut servir pour
+différents types d'objets liés. En pratique, cela devient rapidement
+encombrant et il est beaucoup plus simple de n'avoir qu'un seul type d'objets
+liés par classe.
+
+=item STORE this, index, value
+
+Cette méthode est appelée à chaque fois qu'un élément d'un tableau lié est
+modifié (affecté). Elle prend deux arguments en plus de sa propre S<référence
+:> l'index de l'élément où nous voulons stocker quelque chose et la valeur que
+nous voulons stocker. Par S<exemple :>
+
+    sub STORE {
+      my($self, $idx, $value) = @_;
+      print "[STORE $value at $idx]\n" if _debug;
+      if ($idx > $self->{BOUND} ) {
+        confess "Array OOB: $idx > $self->{BOUND}";
+      }
+      return $self->{ARRAY}[$idx] = $value;
+    }
+
+=item DESTROY this
+
+Cette méthode est appelée lorsque qu'une variable liée doit être
+détruite. Comme dans le cas des scalaires, cela est rarement nécessaire avec
+un langage qui a son propre ramasse-miettes. Donc, cette fois nous la
+laisserons de côté.
+
+=back
+
+Le code que nous avons présenté au début de la section concernant les tableaux
+liés accède à de nombreux éléments du tableau au-delà de la borne fixée. Par
+là même, il récupère une erreur dès qu'il tente d'accéder au-delà du second
+élément comme le montre la sortie S<suivante :>
+
+    setting index 0: value of elt 0 now 0
+    setting index 1: value of elt 1 now 10
+    setting index 2: value of elt 2 now 20
+    setting index 3: Array OOB: 3 > 2 at Bounded_Array.pm line 39
+            Bounded_Array::FETCH called at testba line 12
+
+=head2 Les tables de hachage liées (par tie())
+
+Étant le premier type de données de Perl à être lié (voir dbmopen()), les
+tables de hachage ont l'implémentation tie() la plus complète et la plus
+pratique. Une classe qui implémente une table de hachage liée devrait définir
+les méthodes suivantes : TIEHASH est le constructeur ; FETCH et STORE accèdent
+aux paires clés/valeurs. EXISTS indique si une clé est présente dans la table
+et DELETE en supprime une. CLEAR vide la table en supprimant toutes les paires
+clé/valeur. FIRSTKEY et NEXTKEY implémentent les fonctions keys() et each()
+pour parcourir l'ensemble des clés. Et DESTROY est appelée lorsque la variable
+liée est détruite.
+
+Si cela vous semble beaucoup, vous pouvez hériter du module standard Tie::Hash
+pour la plupart des méthodes et ne redéfinir que celles qui vous
+intéressent. Voir L<Tie::Hash> pour plus de détails.
+
+Souvenez-vous que Perl distingue le cas où une clé n'existe pas dans la table
+de celui où la clé existe mais correspond à une valeur C<undef>. Les deux
+possibilités peuvent être testées via les fonctions C<exists()> et
+C<defined()>.
+
+Voici l'exemple relativement intéressant d'une classe liant une table de
+S<hachage :> cela vous fournit une table de hachage représentant tous les
+fichiers .* d'un utilisateur. Vous donnez comme index dans la table le nom du
+fichier (le point en moins) et vous récupérez le contenu de ce fichier. Par
+S<exemple :>
+
+    use DotFiles;
+    tie %dot, 'DotFiles';
+    if ( $dot{profile} =~ /MANPATH/ ||
+         $dot{login}   =~ /MANPATH/ ||
+         $dot{cshrc}   =~ /MANPATH/    )
+    {
+        print "you seem to set your MANPATH\n";
+    }
+
+Ou une autre utilisation possible de notre classe S<liée :>
+
+    tie %him, 'DotFiles', 'daemon';
+    foreach $f ( keys %him ) {
+        printf "daemon dot file %s is size %d\n",
+            $f, length $him{$f};
+    }
+
+Dans notre exemple de table de hachage liée DotFiles, nous utilisons une table
+de hachage normale pour stocker dans l'objet plusieurs champs importants dont
+le champ C<{LIST}> qui apparaît à l'utilisateur comme le contenu réel de la
+table.
+
+=over 5
+
+=item USER
+
+l'utilisateur pour lequel l'objet représente les fichiers .*
+
+=item HOME
+
+l'endroit où se trouve ces fichiers
+
+=item CLOBBER
+
+si nous pouvons essayer de modifier ou de supprimer ces fichiers.
+
+=item LIST
+
+la table de hachage des noms des fichiers .* et de leur contenu
+
+=back
+
+Voici le début de S<F<Dotfiles.pm> :>
+
+    package DotFiles;
+    use Carp;
+    sub whowasi { (caller(1))[3] . '()' }
+    my $DEBUG = 0;
+    sub debug { $DEBUG = @_ ? shift : 1 }
+
+Dans notre exemple, nous voulons avoir la possibilité d'émettre des
+informations de debug pour aider au développement. Nous fournissons aussi une
+fonction pratique pour aider à l'affichage des messages S<d'avertissements ;>
+whowasi() retourne le nom de la fonction qui l'a appelé.
+
+Voici les méthodes pour la table de hachage DotFiles.
+
+=over
+
+=item TIEHASH classname, LIST
+
+C'est le constructeur de la classe. Cela signifie qu'il est supposé retourner
+une référence bénie (par bless()) au travers de laquelle on peut accéder au
+nouvel objet (probablement mais pas nécessairement une table de hachage
+anonyme).
+
+Voici le S<constructeur :>
+
+    sub TIEHASH {
+        my $self = shift;
+        my $user = shift || $>;
+        my $dotdir = shift || '';
+        croak "usage: @{[&whowasi]} [USER [DOTDIR]]" if @_;
+        $user = getpwuid($user) if $user =~ /^\d+$/;
+        my $dir = (getpwnam($user))[7]
+                || croak "@{[&whowasi]}: no user $user";
+        $dir .= "/$dotdir" if $dotdir;
+
+        my $node = {
+            USER    => $user,
+            HOME    => $dir,
+            LIST    => {},
+            CLOBBER => 0,
+        };
+
+        opendir(DIR, $dir)
+                || croak "@{[&whowasi]}: can't opendir $dir: $!";
+        foreach $dot ( grep /^\./ && -f "$dir/$_", readdir(DIR)) {
+            $dot =~ s/^\.//;
+            $node->{LIST}{$dot} = undef;
+        }
+        closedir DIR;
+        return bless $node, $self;
+    }
+
+Il n'est pas inutile de préciser que, si vous voulez tester un fichier dont le
+nom est produit par readdir, vous devez la précéder du nom du répertoire en
+question. Sinon, puisque nous ne faisons pas de chdir() ici, il ne testera
+sans doute pas le bon fichier.
+
+=item FETCH this, key
+
+Cette méthode est appelée à chaque fois qu'on accède (en lecture) à un élément
+d'une table de hachage liée. Elle prend un argument en plus de sa propre
+S<référence :> la clé d'accès à la valeur que l'on cherche à lire.
+
+Voici le code FETCH pour notre exemple DotFiles.
+
+    sub FETCH {
+        carp &whowasi if $DEBUG;
+        my $self = shift;
+        my $dot = shift;
+        my $dir = $self->{HOME};
+        my $file = "$dir/.$dot";
+
+        unless (exists $self->{LIST}->{$dot} || -f $file) {
+            carp "@{[&whowasi]}: no $dot file" if $DEBUG;
+            return undef;
+        }
+
+        if (defined $self->{LIST}->{$dot}) {
+            return $self->{LIST}->{$dot};
+        } else {
+            return $self->{LIST}->{$dot} = `cat $dir/.$dot`;
+        }
+    }
+
+C'est facile à écrire en lui faisant appeler la commande Unix cat(1) mais ce
+serait probablement plus portable d'ouvrir le fichier manuellement (et
+peut-être plus efficace). Bien sûr, puisque les fichiers .* sont un concept
+Unix, nous ne sommes pas concernés.
+
+=item STORE this, key, value
+
+Cette méthode est appelée à chaque accès (en écriture) à un élément d'une
+table de hachage liée. Elle prend deux arguments en plus de sa propre
+S<référence :> la clé qui nous servira pour stocker quelque chose et la valeur
+que vous lui associez.
+
+Dans notre exemple DotFiles, nous n'autorisons la réécriture du fichier que
+dans le cas où la méthode clobber() a été appelée à partir de la référence
+objet retournée par tie().
+
+    sub STORE {
+        carp &whowasi if $DEBUG;
+        my $self = shift;
+        my $dot = shift;
+        my $value = shift;
+        my $file = $self->{HOME} . "/.$dot";
+        my $user = $self->{USER};
+
+        croak "@{[&whowasi]}: $file not clobberable"
+            unless $self->{CLOBBER};
+
+        open(F, "> $file") || croak "can't open $file: $!";
+        print F $value;
+        close(F);
+    }
+
+Si quelqu'un veut écraser quelque chose, il doit S<dire :>
+
+    $ob = tie %daemon_dots, 'daemon';
+    $ob->clobber(1);
+    $daemon_dots{signature} = "A true daemon\n";
+
+Un autre moyen de mettre la main sur une référence à l'objet sous-jacent est
+d'utiliser la fonction tied(). Il serait donc aussi possible de S<dire :>
+
+    tie %daemon_dots, 'daemon';
+    tied(%daemon_dots)->clobber(1);
+
+La méthode clobber est très S<simple :>
+
+    sub clobber {
+        my $self = shift;
+        $self->{CLOBBER} = @_ ? shift : 1;
+    }
+
+=item DELETE this, key
+
+Cette méthode est appelée lorsqu'on supprime un élément d'une table de hachage
+en utilisant par exemple la fonction delete(). Encore une fois, nous vérifions
+que nous voulons réellement écraser les fichiers.
+
+    sub DELETE   {
+        carp &whowasi if $DEBUG;
+
+        my $self = shift;
+        my $dot = shift;
+        my $file = $self->{HOME} . "/.$dot";
+        croak "@{[&whowasi]}: won't remove file $file"
+            unless $self->{CLOBBER};
+        delete $self->{LIST}->{$dot};
+        my $success = unlink($file);
+        carp "@{[&whowasi]}: can't unlink $file: $!" unless $success;
+        $success;
+    }
+
+La valeur retournée par DELETE deviendra la valeur retournée par l'appel à
+delete(). Si vous voulez simuler le comportement normal de delete(), vous
+devriez retourner ce qu'aurait retourné FETCH pour cette clé. Dans notre
+exemple, nous avons préféré retourner une valeur qui indique à l'appelant si
+le fichier a été correctement effacé.
+
+=item CLEAR this
+
+Cette méthode est appelée lorsque l'ensemble de la table de hachage est
+effacée, habituellement en lui affectant la liste vide.
+
+Dans notre exemple, cela devrait supprimer tous les fichiers .* de
+l'utilisateur ! C'est une chose tellement dangereuse que nous exigeons un
+positionnement de CLOBBER à une valeur supérieure à 1 pour l'autoriser.
+
+    sub CLEAR    {
+        carp &whowasi if $DEBUG;
+        my $self = shift;
+        croak "@{[&whowasi]}: won't remove all dot files for $self->{USER}"
+            unless $self->{CLOBBER} > 1;
+        my $dot;
+        foreach $dot ( keys %{$self->{LIST}}) {
+            $self->DELETE($dot);
+        }
+    }
+
+=item EXISTS this, key
+
+Cette méthode est appelée lorsque l'utilisateur appelle la fonction exists()
+sur une table pour une clé particulière. Dans notre exemple, nous cherchons
+la clé dans la table de hachage S<C<{LIST}> :>
+
+    sub EXISTS   {
+        carp &whowasi if $DEBUG;
+        my $self = shift;
+        my $dot = shift;
+        return exists $self->{LIST}->{$dot};
+    }
+
+=item FIRSTKEY this
+
+Cette méthode est appelée lorsque l'utilisateur commence une itération à
+travers la table de hachage via un appel à keys() ou each().
+
+    sub FIRSTKEY {
+        carp &whowasi if $DEBUG;
+        my $self = shift;
+        my $a = keys %{$self->{LIST}};          # reset each() iterator
+        each %{$self->{LIST}}
+    }
+
+=item NEXTKEY this, lastkey
+
+Cette méthode est appelée lors d'une itération via keys() ou each(). Son
+second argument est la dernière clé à laquelle on a accédé. C'est pratique
+si vous voulez faire attention à l'ordre, si vous appelez l'itérateur pour
+plusieurs séquences à la fois ou si vous ne stockez pas vos données dans une
+table de hachage réelle.
+
+Dans notre exemple, nous utilisons une vraie table de hachage. Nous pouvons
+donc faire simplement en accédant tout de même au champ LIST de manière
+indirecte.
+
+    sub NEXTKEY  {
+        carp &whowasi if $DEBUG;
+        my $self = shift;
+        return each %{ $self->{LIST} }
+    }
+
+=item DESTROY this
+
+Cette méthode est appelée lorsque une table de hachage liée va
+disparaître. Vous n'en avez pas réellement besoin sauf pour débugguer ou pour
+nettoyer quelques donnés auxiliaires. Voici une fonction très S<simple :>
+
+    sub DESTROY  {
+        carp &whowasi if $DEBUG;
+    }
+
+=back
+
+Notez que des fonctions telles que keys() et values() peuvent retourner des
+listes énormes lorsqu'elles sont utilisées sur de gros objets comme des
+fichiers DBM. Vous devriez plutôt utiliser la fonction each() pour les
+parcourir. S<Exemple :>
+
+    # print out history file offsets
+    use NDBM_File;
+    tie(%HIST, 'NDBM_File', '/usr/lib/news/history', 1, 0);
+    while (($key,$val) = each %HIST) {
+        print $key, ' = ', unpack('L',$val), "\n";
+    }
+    untie(%HIST);
+
+=head2 Les FileHandle liés (par tie())
+
+Pour l'instant, c'est partiellement implémenté.
+
+Une classe qui implémente un filehandle lié devrait définir les méthode
+S<suivantes :> TIEHANDLE, au moins une méthode parmi PRINT, PRINTF, WRITE,
+READLINE, GETC, READ, et éventuellement CLOSE et DESTROY. La classe peut aussi
+S<fournir :> BINMODE, OPEN, EOF, FILENO, SEEK et TELL (si les opérateurs Perl
+correspondants sont utilisés sur le descriprteur).
+
+C'est particulièrement pratique lorsque perl est utilisé à l'intérieur d'un
+autre programme dans lequel STDOUT et STDERR ont été redirigés d'une manière
+un peu spéciale. Voir nvi et le module Apache pour des exemples.
+
+Dans notre exemple, nous essayons de créer un filehandle crieur (I<shouting>
+en anglais).
+
+    package Shout;
+
+=over
+
+=item TIEHANDLE classname, LIST
+
+C'est le constructeur de la classe. Cela signifie qu'il est supposé retourner
+un référence bénie (par bless()). Cette référence peut être utilisée pour
+stocker des informations internes.
+
+    sub TIEHANDLE { print "<shout>\n"; my $i; bless \$i, shift }
+
+=item WRITE this, LIST
+
+Cette méthode est appelée lorsqu'on écrit sur le filehandle via la fonction
+C<syswrite>.
+
+    sub WRITE {
+        $r = shift;
+        my($buf,$len,$offset) = @_;
+        print "WRITE called, \$buf=$buf, \$len=$len, \$offset=$offset";
+    }
+
+=item PRINT this, LIST
+
+Cette méthode est appelée lorsqu'on écrit sur le filehandle via la fonction
+C<print()>. En plus de sa propre référence, elle attend une liste à passer à
+la fonction print.
+
+    sub PRINT { $r = shift; $$r++; print join($,,map(uc($_),@_)),$\ }
+
+=item PRINTF this, LIST
+
+Cette méthode est appelée lorsqu'on écrit sur le filehandle via la fonction
+C<printf()>. En plus de sa propre référence, elle attend un format et une
+liste à passer à la fonction printf.
+
+    sub PRINTF {
+        shift;
+        my $fmt = shift;
+        print sprintf($fmt, @_)."\n";
+    }
+
+=item READ this, LIST
+
+Cette méthode est appelée lorsque le filehandle est lu via les fonctions
+C<read()> ou C<sysread()>.
+
+    sub READ {
+        my $self = shift;
+        my $$bufref = \$_[0];
+        my(undef,$len,$offset) = @_;
+        print "READ called, \$buf=$bufref, \$len=$len, \$offset=$offset";
+        # add to $$bufref, set $len to number of characters read
+        $len;
+    }
+
+=item READLINE this
+
+Cette méthode est appelée lorsque le filehandle est lu via <HANDLE>. Elle
+devrait retourner undef lorsque il n'y a plus de données.
+
+    sub READLINE { $r = shift; "PRINT called $$r times\n"; }
+
+=item GETC this
+
+Cette méthode est appelée lorsque la fonction C<getc> est appelée.
+
+    sub GETC { print "Don't GETC, Get Perl"; return "a"; }
+
+=item CLOSE this
+
+Cette méthode est appelée lorsque le filehandle est fermé via la fonction
+C<close>.
+
+    sub CLOSE { print "CLOSE called.\n" }
+
+=item DESTROY this
+
+Comme pour les autres types de variables liées, cette méthode sera appelée
+lorsque le filehandle lié va être détruit. C'est pratique pour débugguer et
+éventuellement nettoyer.
+
+    sub DESTROY { print "</shout>\n" }
+
+=back
+
+Voici comment utiliser notre petit S<exemple :>
+
+    tie(*FOO,'Shout');
+    print FOO "hello\n";
+    $a = 4; $b = 6;
+    print FOO $a, " plus ", $b, " equals ", $a + $b, "\n";
+    print <FOO>;
+
+=head2 Piège de la fonction C<untie>
+
+Si vous projetez d'utiliser l'objet retourné soit par tie() soit par tied() et
+si la classe liée définit un destructeur, il y a un piège subtile que vous
+I<devez> connaître.
+
+Comme base, considérons cette exemple d'utilisation de tie; la seule chose
+qu'il fait est de garder une trace de toutes les valeurs affectées à un
+scalaire.
+
+    package Remember;
+
+    use strict;
+    use IO::File;
+
+    sub TIESCALAR {
+        my $class = shift;
+        my $filename = shift;
+        my $handle = new IO::File "> $filename"
+                         or die "Cannot open $filename: $!\n";
+
+        print $handle "The Start\n";
+        bless {FH => $handle, Value => 0}, $class;
+    }
+
+    sub FETCH {
+        my $self = shift;
+        return $self->{Value};
+    }
+
+    sub STORE {
+        my $self = shift;
+        my $value = shift;
+        my $handle = $self->{FH};
+        print $handle "$value\n";
+        $self->{Value} = $value;
+    }
+
+    sub DESTROY {
+        my $self = shift;
+        my $handle = $self->{FH};
+        print $handle "The End\n";
+        close $handle;
+    }
+
+    1;
+
+Voici un exemple S<d'utilisation :>
+
+    use strict;
+    use Remember;
+
+    my $fred;
+    tie $fred, 'Remember', 'myfile.txt';
+    $fred = 1;
+    $fred = 4;
+    $fred = 5;
+    untie $fred;
+    system "cat myfile.txt";
+
+Et voici le résultat de S<l'exécution :>
+
+    The Start
+    1
+    4
+    5
+    The End
+
+Jusqu'à maintenant, tout va bien. Pour ceux qui ne l'auraient pas remarqué,
+l'objet lié n'a pas encore été utilisé. Ajoutons donc, à la classe Remember,
+une méthode supplémentaire permettant de mettre des commentaires dans le
+fichier -- disons quelque chose S<comme :>
+
+    sub comment {
+        my $self = shift;
+        my $text = shift;
+        my $handle = $self->{FH};
+        print $handle $text, "\n";
+    }
+
+Voici maintenant l'exemple précédent modifié pour utiliser la méthode
+C<comment> (qui nécessite l'objet S<lié) :>
+
+    use strict;
+    use Remember;
+
+    my ($fred, $x);
+    $x = tie $fred, 'Remember', 'myfile.txt';
+    $fred = 1;
+    $fred = 4;
+    comment $x "changing...";
+    $fred = 5;
+    untie $fred;
+    system "cat myfile.txt";
+
+Lorsque ce code s'exécute, il ne produit rien. Voici pourquoi...
+
+Lorsqu'une variable est liée, elle est associée avec l'objet qui est retourné
+par la fonction TIESCALAR, TIEARRAY, ou TIEHASH. Cette objet n'a normalement
+qu'une seule référence, à savoir, la référence implicite prise par la variable
+liée. Lorsque untie() est appelé, cette référence est supprimée, Et donc,
+comme dans notre premier exemple ci-dessus, le destructeur (DESTROY) de
+l'objet est appelé ce qui est normal pour un objet qui n'a plus de référence
+valide; et donc le fichier est fermé.
+
+Dans notre second exemple, par contre, nous avons stocké dans $x une autre
+référence à l'objet lié. Si bien que lorsque untie() est appelé, il reste
+encore une référence valide sur l'objet, donc le destructeur n'est pas appelé
+à ce moment et donc le fichier n'est pas fermé. Le buffer du fichier n'étant
+pas vidé, ceci explique qu'il n'y ait pas de sortie.
+
+Bon, maintenant que nous connaissons le problème, que pouvons-nous faire pour
+S<l'éviter ?> La bonne vieille option C<-w> vous signalera tout appel à
+untie() pour lequel l'objet lié possède encore des références valides. Si le
+second script ci-dessus est utilisé avec l'option C<-w>, Perl affiche le
+message d'avertissement S<suivant :>
+
+    untie attempted while 1 inner references still exist
+
+Pour faire fonctionner correctement ce script et sans message, assurez-vous
+qu'il n'existe plus de références valides vers l'objet lié I<avant> d'appeler
+S<untie() :>
+
+    undef $x;
+    untie $fred;
+
+=head1 VOIR AUSSI
+
+Voir L<DB_File> ou L<Config> pour quelques utilisations intéressantes de
+tie().
+
+=head1 BUGS
+
+Les tableaux liés sont I<incomplets>. Il y a quelques lacunes comme l'accès à
+C<$#TABLEAU> (qui est difficile puisque c'est une lvalue) mais aussi les
+autres fonctions de manipulation des tableaux telles que push(), pop(),
+shift(), unshift() et splice().
+
+Vous ne pouvez pas lier facilement une structure multi-niveaux (comme une
+table de tables de hachage) à un fichier dbm. Le premier problème est la
+limite de taille d'une valeur (sauf pour GDBM et Berkeley DB). Mais, au-delà,
+vous aurez aussi le problème du stockage de références sur disque. L'un des
+modules qui tentent de répondre à ce genre de besoins est encore expérimental
+et S<partiel :> le module MLDBM. Cherchez le code source de MLDBM sur le site
+CPAN le plus proche (comme décrit dans L<perlmodlib>).
+
+=head1 AUTEURS
+
+Tom Christiansen
+
+TIEHANDLE par Sven Verdoolaege <F<skimo@dns.ufsia.ac.be>> et Doug MacEachern
+<F<dougm@osf.org>>
+
+=head1 TRADUCTION
+
+=head2 Version
+
+Cette traduction française correspond à la version anglaise distribuée avec
+perl 5.6.0.  Pour en savoir plus concernant ces traductions, consultez
+L<http://perl.enstimac.fr/>.
+
+=head2 Traducteur
+
+Traduction initiale et mise à jour S<v5.6.0 :> Paul Gaborit
+<Paul.Gaborit at enstimac.fr>
+
+=head2 Relecture
+
+Régis Julié <Regis.Julie@cetelem.fr>

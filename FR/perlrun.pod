@@ -1,0 +1,915 @@
+=encoding iso-8859-1
+
+=head1 NAME/NOM
+
+perlrun - Comment utiliser l'interpréteur Perl
+
+=head1 SYNOPSIS
+
+B<perl> S<[ B<-CsTuUWX> ]>
+        S<[ B<-hv> ] [ B<-V>[:I<configvar>] ]>
+        S<[ B<-cw> ] [ B<-d>[:I<debugger>] ] [ B<-D>[I<number/list>] ]>
+        S<[ B<-pna> ] [ B<-F>I<pattern> ] [ B<-l>[I<octal>] ] [ B<-0>[I<octal>] ]>
+        S<[ B<-I>I<dir> ] [ B<-m>[B<->]I<module> ] [ B<-M>[B<->]I<'module...'> ]>
+        S<[ B<-P> ]>
+        S<[ B<-S> ]>
+        S<[ B<-x>[I<dir>] ]>
+        S<[ B<-i>[I<extension>] ]>
+        S<[ B<-e> I<'command'> ] [ B<--> ] [ I<programfile> ] [ I<argument> ]...>
+
+=head1 DESCRIPTION
+
+La façon habituelle d'exécuter un programme Perl est de le rendre
+directement exécutable ou bien de passer le nom du fichier source
+comme argument de ligne de commande (Un environnement Perl interactif
+est aussi possible -- voir L<perldebug> pour plus de détails sur son
+utilisation). Au lancement, Perl recherche votre script à un des
+endroits suivants:
+
+=over 4
+
+=item 1.
+
+Spécifié ligne par ligne par l'intermédiaire d'options B<-e> sur la
+ligne de commande.
+
+=item 2.
+
+Contenu dans le fichier spécifié par le premier nom de fichier sur la ligne de
+commande. (Notez que les systèmes qui supportent la notation #! invoquent les
+interpréteurs de cette manière. Cf. L<Localisation Perl>.)
+
+=item 3.
+
+Passé implicitement sur l'entrée standard. Cela ne marche que s'il n'y
+a pas de noms de fichiers comme argument -- pour passer des arguments
+à un programme lisant sur STDIN, vous devez explicitement spécifier un
+"-" pour le nom du script.
+
+=back
+
+Avec les méthodes 2 et 3, Perl démarre l'analyse du fichier d'entrée à
+partir du début, à moins de rajouter une option B<-x>. Dans ce cas, il
+cherche la première ligne qui commence par #! et contient le mot
+"perl". L'interprétation commence à partir de cette ligne. C'est utile
+pour lancer un programme contenu dans un message plus grand (par
+exemple dans un courrier électronique ou un article Usenet, NDT). Dans
+ce genre de cas, la fin du programme doit être indiquée par __END__.
+
+Lorsque la ligne commençant par #! est analysée, des options
+éventuelles sont toujours recherchées. Ainsi, si vous êtes sur une
+machine qui n'autorise qu'un seul argument avec la ligne #!, ou pire,
+ne reconnait pas la ligne #!, vous pouvez toujours obtenir un
+comportement homogène des options, quelque soit la manière dont Perl a
+été invoqué, même si B<-x> a été utilisé pour trouver le début du
+programme.
+
+Puisque historiquement certains systèmes d'exploitation arrêtaient
+l'interprétation de la ligne #! par le noyau à partir de 32
+caractères, certaines options peuvent être passées sur la ligne de
+commande, d'autres pas ; vous pouvez même vous retrouver avec un "-"
+sans sa lettre au lieu d'une option complète, si vous n'y faites pas
+attention. Vous voudrez probablement vous assurer que toutes vos
+options tombent d'un côté ou de l'autre de la frontière des 32
+caractères. La plupart des options ne se soucient pas d'être traitées
+de façon redondante, mais obtenir un "-" au lieu d'une option complète
+pourrait pousser Perl à essayer d'exécuter l'entrée standard au lieu
+de votre programme. Une option B<-I> incomplète pourrait aussi donner
+des résultats étranges.
+
+Certaines options sont sensibles au nombre de fois où elles sont
+présentes sur la ligne de commande, par exemple, les combinaisons des
+options B<-l> et B<-0>.  Il faut soit mettre toutes les options après
+la limite des 32 caractères (si possible), soit remplacer les
+utilisations de B<-0>I<digits> par C<BEGIN{ $/ = "\0digits"; }>.
+
+L'analyse des options commence dès que "perl" est mentionné sur la
+ligne.  Les séquences "-*" et "- " sont spécialement ignorées de telle
+manière que vous puissiez écrire (si l'envie vous en prend), disons
+
+    #!/bin/sh -- # -*- perl -*- -p
+    eval 'exec perl -wS $0 ${1+"$@"}'
+        if $running_under_some_shell;
+
+pour permettre à Perl de voir l'option B<-p>.
+
+Un truc similaire implique le programme B<env>, si vous le possédez.
+
+    #!/usr/bin/env perl
+
+Les exemples ci-dessus utilisant un chemin relatif vers l'interpréteur
+perl, atteignant la première version trouvée dans le chemin de
+l'utilisateur. Si vous voulez une version spécifique de Perl, disons,
+perl5.005_57, vous devez le placer directement dans le chemin de la
+ligne #! .
+
+Si la ligne #! ne contient pas le mot "perl", le programme indiqué
+après le #! est lancé au lieu de l'interpréteur Perl. C'est assez
+bizarre, mais cela aide les gens qui utilisent des machines qui ne
+reconnnaissent pas #!, car ainsi ils peuvent indiquer à un programme
+que leur SHELL est F</usr/bin/perl>, et Perl va alors envoyer le
+program vers le bon interpréteur pour eux.
+
+Après avoir localisé votre programme, Perl le compile en une forme
+interne. Si il y a ne serait-ce qu'un erreur de compilation,
+l'exécution du programme n'est pas tentée (c'est différent du script
+shell de base, qui peut être exécuté à moitié avant de détecter une
+erreur de syntaxe).
+
+Si le programme est syntaxiquement correct, il est exécuté. Si le
+programme se termine sans rencontrer un opérateur die() ou exit(), un
+C<exit(0)> implicite est ajouté pour indiquer une exécution réussie.
+
+=head2 #! et l'isolement (quoting) sur les systèmes non-Unix
+
+La technique #! d'Unix peut être simulée sur les autres systèmes:
+
+=over 4
+
+=item OS/2
+
+Ajouter
+
+    extproc perl -S -vos_options
+
+sur la première ligne de vos fichiers C<*.cmd> (le B<-S> est dû à un
+bug dans la manière dont cmd.exe gère `extproc').
+
+=item MS-DOS
+
+Créez un fichier de commande (batch) pour lancer votre programme, et
+placez son nom dans C<ALTERNATIVE_SHEBANG> ("#!" se prononce She Bang,
+cf. Jargon File, NDT). Pour plus d'informations à ce sujet, voir le
+fichier F<dosish.h> dans les sources de la distribution.
+
+=item Win95/NT
+
+L'installation Win95/NT, en tout cas l'installeur Activestate pour
+Perl, va modifier la Base de Registre pour associer l'extension F<.pl>
+avec l'interpréteur Perl. Si vous installez Perl par d'autres moyens
+(y compris la compilation à partir des sources), vous devrez modifier
+la base de registre vous-même. Notez que cela implique que vous ne
+pourrez plus faire la différence entre un exécutable Perl et une
+bibliothèque Perl.
+
+=item Macintosh
+
+Les programmes Perl Macintosh auront le Creator et le Type adéquat,
+donc un double-clic lancera l'application Perl.
+
+=item VMS
+
+Mettez
+
+    $ perl -mysw 'f$env("procedure")' 'p1' 'p2' 'p3' 'p4' 'p5' 'p6' 'p7' 'p8' !
+    $ exit++ + ++$status != 0 and $exit = $status = undef;
+
+au début de votre programme, où C<-mysw> représente toutes les options
+de ligne de commande que vous voulez passer à Perl. Vous pouvez
+désormais invoquer le programme directement, en disant C<perl
+programme>, ou en tant que procédure DCL, en disant C<@programme> (ou
+implicitement via F<DCL$PATH> en utilisant juste le nom du programme).
+
+Cette incantation est un peu difficile à mémoriser, bmais Perl
+l'affichera pour vous si vous dites C<perl "-V:startperl">.
+
+=back
+
+Les interpréteurs de commandes des systèmes non-Unix ont des idées
+plutôt différentes des shells Unix concernant l'isolement (quoting).
+Il vous faudra apprendre quels sont les caractères spéciaux de votre
+interpréteur de commande (C<*>, C<\> et C<"> sont courants), et
+comment protéger les espaces et ces caractères pour lancer des
+one-liners [Ndt] scripts sur une seule ligne [Fin de Ndt] (cf. B<-e>
+plus bas).
+
+Sur certains systèmes, vous devrez peut-être changer les apostrophes
+(single-quote) en double (guillemets), ce qu'il ne faut I<pas> faire
+sur les systèmes Unix ou Plan9. Vous devrez peut-être aussi changer le
+signe % seul en %%.
+
+Par exemple:
+
+    # Unix
+    perl -e 'print "Hello world\n"'
+
+    # MS-DOS, etc.
+    perl -e "print \"Hello world\n\""
+
+    # Macintosh
+    print "Hello world\n"
+     (puis Run "Myscript" ou Shift-Command-R)
+
+    # VMS
+    perl -e "print ""Hello world\n"""
+
+Le problème, c'est qu'aucun de ces exemples n'est absolument sûr de
+marcher: cela dépend de la commande et il est possible qu'aucune forme
+ne fonctionne.  Si l'interpréteur de commande était B<4DOS>, ceci
+marcherait probablement mieux :
+
+    perl -e "print <Ctrl-x>"Hello world\n<Ctrl-x>""
+
+B<CMD.EXE> dans Windows NT a récupéré beaucoup de fonctionnalités Unix
+lorsque tout le monde avait le dos tourné, mais essayez de trouver de
+la documentation sur ses règles d'isolement !
+
+Sur Macintosh, cela dépend de l'environnement que vous utilisez. Le
+shell MacPerl, ou MPW, est très proche des shells Unix pour son
+support de différentes variantes d'isolement, si ce n'est qu'il
+utilise allègrement les caractères Macintosh non ASCII comme
+caractères de contrôle.
+
+Il n'y a pas de solution générale à ces problèmes. C'est juste le
+foutoir.
+
+=head2 Localisation Perl
+
+Cela peut sembler évident, mais Perl est seulement utile quand les
+utilisateurs y ont facilement accès. Autant que possible, il est bon
+d'avoir F</usr/bin/perl> et F</usr/local/bin/perl> comme liens
+symboliques (symlinks) vers le bon binaire.  Si cela n'est pas
+possible, les administrateurs systèmes sont encouragés à mettre (des
+symllinks vers) perl et ses utilitaires associés, dans un répertoire
+fréquemment présent présent dans le PATH des utilisateurs, ou encore
+dans un quelconque autre endroit pratique ou évident.
+
+Dans cette documentation, C<#!/usr/bin/perl> dans la première ligne
+d'un programme, indiquera ce qui marche sur votre système. Nous vous
+conseillons d'utiliser un chemin spécifique si vous avez besoin d'une
+version particulière.
+
+    #!/usr/local/bin/perl5.00554
+
+ou si vous voulez juste utiliser une version minimale, placez une
+instruction telle que celle-ci au début de votre programme :
+
+    use 5.005_54;
+
+=head2 Options de Ligne de Commande
+
+Comme pour toutes les commandes standard, une option mono-caractère
+peut être combinée avec l'option suivante, le cas échéant.
+
+    #!/usr/bin/perl -spi.orig   # équivalent à -s -p -i.orig
+
+Les options comprennent:
+
+=over 5
+
+=item B<-0>[I<digits>]
+
+indique le séparateur denregistrment en entrée (C<$/>) en notation
+octale.  S'il n'y a pas de chiffres, le caractère nul (ASCII 0) est le
+séparateur.  D'autres options peuvent suivre ou précéder les
+chiffres. Par exemple, si vous avez une version de B<find> qui peut
+afficher les noms de fichiers terminés par des caratères nul, vous
+pouvez écrire ceci:
+
+    find . -name '*.orig' -print0 | perl -n0e unlink
+
+La valeur spéciale 00 va indiquer à Perl d'avaler les fichiers en mode
+paragraphes. La valeur 0777, indique à Perl d'avaler les fichiers en
+entier car il n'y a pas de caractère avec cette valeur octale.
+
+=item B<-a>
+
+active le mode auto-découpage (autosplit) avec B<-n> ou B<-p>.  Une
+comande split implicite du tableau @F est faite comme première action,
+à l'intérieur de la boucle while implicite produite par B<-n> ou
+B<-p>.
+
+    perl -ane 'print pop(@F), "\n";'
+
+est équivalent à
+
+    while (<>) {
+        @F = split(' ');
+        print pop(@F), "\n";
+    }
+
+Un autre séparateur [Ndt] que espace ' '[Fin Ndt] peut être spécifié
+avec B<-F>.
+
+=item B<-C>
+
+permet à Perl d'utiliser les API natives pour caractères larges sur le
+système cible. La variable magique C<${^WIDE_SYSTEM_CALLS}> reflète
+l'état de cette option. Voir L<perlvar/"${^WIDE_SYSTEM_CALLS}">.
+
+Cette caractéristique n'est couramment implémentée que sur la
+plate-forme Win32.
+
+=item B<-c>
+
+indique à Perl de vérifier la syntaxe du programme et de sortir ensuite
+sans l'exécuter. En fait, il I<va> exécuter C<BEGIN>, C<CHECK>, et les
+blocs C<use>, car ils sont considérés comme existants en dehors de
+l'exécution de votre programme. Les blocs C<INIT> et C<END> seront
+toutefois passés.
+
+=item B<-d>
+
+lance le programme sous le débogueur (debugger) Perl. Cf. L<perldebug>.
+
+=item B<-d:>I<foo>
+
+lance le programme sous le contrôle d'un module de trace, de profilage
+ou de débogage installé sous le nom Devel::foo. C'est-à-dire que
+B<-d:DProf> exécute le programme en utilisant le profileur
+Devel::DProf. Cf. L<perldebug>.
+
+=item B<-D>I<letters>
+
+=item B<-D>I<number>
+
+fixe les drapeaux (flags) de débogage de Perl. Pour voir comment il
+exécute votre programme, utilisez B<-Dtls>. (Cela ne fonctionne que si
+le support du débogage est compilé dans votre interpréteur Perl). Une
+autre valeur intéressante est B<-Dx>, qui affiche l'arbre syntaxique
+compilé. Et B<-Dr> affiche les expressions rationnelles
+compilées. Vous pouvez donner des nombres à la place des listes de
+lettres (par exemple, B<-D14> est équivalent à B<-Dtls>):
+
+      1  p  Découpage en symboles et analyse
+      2  s  Clichés de la pile
+      4  l  Traitement des piles de contextes (Context (loop) stack processing)
+      8  t  Exécution tracée (Trace execution)
+     16  o  Résolution et surcharge de méthodes
+     32  c  Conversions chaînes/nombres
+     64  P  Affiche les commandes du pré-processeur pour -P
+    128  m  Allocation mémoire
+    256  f  Traitement des formats
+    512  r  Analyse et exécution des expressions rationnelles
+   1024  x  Affichage de l'arbre syntaxique
+   2048  u  Vérification d'intégrité
+   4096  L  Fuites de mémoire (nécessite -DLEAKTEST à la compilation de Perl)
+   8192  H  Affiche les hash (usurps values())
+  16384  X  Allocation scratchpad
+  32768  D  Nettoyage
+  65536  S  Synchronisation des fils d'exécution
+
+Tous ces drapeaux nécessitent B<-DDEBUGGING> quand vous compilez
+l'exécutable Perl. Voir le fichier F<INSTALL> dans la distribution des
+sources de Perl pour savoir comment le faire. Ce drapeau est
+automatiquement rajouté si vous compilez avec l'option C<-g> quand
+C<Configure> vous demande les drapeaux de votre optimiseur/débogueur.
+
+Si vous essayez juste d'obtenir l'affichage de chaque ligne de code
+Perl au fil de l'exécution, à la façon dont C<sh -x> le fournit pour
+les scripts shell, vous ne pouvez pas utilise l'option B<-D> de
+Perl. Faites ceci à la place
+
+  # Syntaxe du Bourne shell
+  $ PERLDB_OPTS="NonStop=1 AutoTrace=1 frame=2" perl -dS program
+
+  # Syntax csh
+  % (setenv PERLDB_OPTS "NonStop=1 AutoTrace=1 frame=2"; perl -dS program)
+
+Voir L<perldebug> pour plus de détails et des variantes.
+
+=item B<-e> I<commandline>
+
+peut être utilisé pour entrer une ligne de programme. Si B<-e> est
+présent, Perl ne va pas chercher de nom de fichier dans la liste des
+arguments. De multiples commandes B<-e> peuvent être données pour
+créer des scripts multi-lignes. Assurez vous que vous mettez bien des
+points-virgules là où vous en mettriez dans un programme normal.
+
+=item B<-F>I<pattern>
+
+indique le motif à utiliser pour l'auto-découpage si B<-a> est aussi
+présent.  Le motif peut être délimité par C<//>, C<"">, ou C<''>,
+sinon il sera mis entre apostrophes.
+
+=item B<-h>
+
+affiche un résumé des options.
+
+=item B<-i>[I<extension>]
+
+indique que les fichiers traités par la forme C<E<lt>E<gt>> doivent
+être édités en place. Cela est accompli en renommant le fichier
+source, en ouvrant le fichier résultat sous le nom initial, et en
+sélectionnant ce fichier de résultat comme sortie par défaut pour les
+instructions print().  L'extension, le cas échéant, est utilisée pour
+modifier le nom du fichier source pour faire une copie de sauvegarede,
+suivant ces règles:
+
+Si aucune extension n'est fournie, aucune sauvegarde n'est faite et le
+fichier source est écrasé.
+
+Si l'extension ne contient pas d'étoile (C<*>), elle est ajoutée à la
+fin du nom de fichier courant comme suffixe. Si l'extension contient
+un ou plusieurs caractères C<*>, chacune des C<*> est remplacée par le
+nom de fichier courant. En perl, on pourrait l'écrire ainsi :
+
+    ($backup = $extension) =~ s/\*/$file_name/g;
+
+Cela vous permet d'ajouter un préfixe au fichier de sauvegarde, au
+lieu (ou en plus) d'un suffixe:
+
+    $ perl -pi'orig_*' -e 's/bar/baz/' fileA    # sauvegarde en 'orig_fileA'
+
+Ou même de placer les sauvegardes des fichiers originaux dans un autre
+répertoire (à condition que ce répertoire existe déjà):
+
+    $ perl -pi'old/*.orig' -e 's/bar/baz/' fileA # sauvegarde en 'old/fileA.orig'
+
+Ces exemples sont équivalents :
+
+    $ perl -pi -e 's/bar/baz/' fileA            # écrase le fichier courant
+    $ perl -pi '*' -e 's/bar/baz/' fileA        # écrase le fichier courant
+
+    $ perl -pi '.orig' -e 's/bar/baz/' fileA    # sauvegarde en 'fileA.orig'
+    $ perl -pi '*.orig' -e 's/bar/baz/' fileA   # sauvegarde en 'fileA.orig'
+
+À partir du shell, écrire
+
+    $ perl -p -i.orig -e "s/foo/bar/; ... "
+
+revient au même qu'utiliser le programme :
+
+    #!/usr/bin/perl -pi.orig
+    s/foo/bar/;
+
+qui est équivalent à
+
+    #!/usr/bin/perl
+    $extension = '.orig';
+    LINE: while (<>) {
+        if ($ARGV ne $oldargv) {
+            if ($extension !~ /\*/) {
+                $backup = $ARGV . $extension;
+            }
+            else {
+                ($backup = $extension) =~ s/\*/$ARGV/g;
+            }
+            rename($ARGV, $backup);
+            open(ARGVOUT, ">$ARGV");
+            select(ARGVOUT);
+            $oldargv = $ARGV;
+        }
+        s/foo/bar/;
+    }
+    continue {
+        print;  # affiche le nom du fichier original
+    }
+    select(STDOUT);
+
+si ce n'est que l'option B<-i> ne compare pas $ARGV et $oldargv pour
+savoir quand le nom de fichier a changé. Cette option utilise par
+contre, ARGVOUT pour l'identificateur de fichier (filehandle). Notez
+que STDOUT est restauré comme sortie par défaut après la boucle.
+
+Comme montré ci-dessus, Perl crée le fichier de sauvegarde même si la
+sortie n'est pas modifiée. C'est donc une manière amusante de copier
+des fichiers.
+
+    $ perl -p -i '/some/file/path/*' -e 1 file1 file2 file3...
+ou
+    $ perl -p -i '.orig' -e 1 file1 file2 file3...
+
+Vous pouvez utiliser C<eof> sans parenthèses pour localiser la fin de
+chaque fichier d'entrée, au cas où vous voulez ajouter des choses à la
+fin, ou réinitialiser le comptage des lignes (cf. exemples dans
+L<perlfunc/eof>).
+
+Si, pour un fichier donné, Perl n'est pas capable de créer de fichier
+de sauvegarde avec l'extension indiquée, il ne traitera pas le fichier
+et passera au suivant (s'il existe).
+
+Pour une discussion des détaillée des permissions des fichiers et B<-i>, voir
+L<perlfaq5/Pourquoi Perl me laisse effacer des fichiers protégés en écriture ?
+Pourquoi -i écrit dans des fichiers protégés ? N'est-ce pas un bug de Perl ?>
+
+Vous ne pouvez pas utiliser B<-i> pour créer des réperoires ou pour
+enlever des extensions à des fichiers.
+
+Perl ne transforme pas les C<~> en noms de fichiers, ce qui est une
+bonne chose, puisque certains l'utilisent pour leurs fichiers de
+sauvegarde :
+
+    $ perl -pi~ -e 's/foo/bar/' file1 file2 file3...
+
+Enfin, l'option B<-i> n'empêche pas l'exécution quand aucune fichier
+n'est donné sur la ligne de commande. Dans ce cas, aucune sauvegarde
+n'est faite (puisque l'original ne peut être déterminé), et le
+traitement se fait de STDIN vers STDOUT, comme on peut s'y attendre.
+
+=item B<-I>I<directory>
+
+Les répertoires spécifiés pas B<-I> sont ajoutés (en tête) du chemin
+de recherche des modules (C<@INC>), et indiquent au pré-processeur C
+où chercher les fichiers à inclure. Le pré-processeur C est appelé
+avec B<-P>; par défaut il cherche dans /usr/include et /usr/lib/perl.
+
+=item B<-l>[I<octnum>]
+
+permet le traitement automatique des fins de lignes. Cela a deux
+effets différents. Premièrement, "C<$/>" (le séparateur
+d'enregistrements en entrée) est automatiquement enlevé avec l'une des
+options B<-n> ou B<-p>. Deuxièmement "C<$\>" (le séparateur
+d'enregistrements en sortie) reçoit la valeur I<octnum> de telle
+manière que toutes les instructions print aient ce séparateur ajouté à
+la fin [du print()]. Si I<octnum> est omis, "C<$\>" prend la valeur de
+"C<$/>". Par exemple, pour limiter les lignes à 80 colonnes :
+
+    perl -lpe 'substr($_, 80) = ""'
+
+Notez que l'affectation C<$\ = $/> est faite quand l'option est
+rencontrée, donc le séparateur en entrée peut être différent du
+séparateur en sortie si l'option B<-l> est suivie de l'option B<-0>:
+
+    gnufind / -print0 | perl -ln0e 'print "found $_" if -p'
+
+Cela affecte retour-chariot '\n' à C<$\> et ensuite affecte le
+caractère nul (ascii 0) à C<$/>.
+
+=item B<-m>[B<->]I<module>
+
+=item B<-M>[B<->]I<module>
+
+=item B<-M>[B<->]I<'module ...'>
+
+=item B<-[mM]>[B<->]I<module=arg[,arg]...>
+
+B<-m>I<module> exécute C<use> I<module> C<();> avant d'exécuter votre
+programme.
+
+B<-M>I<module> exécute C<use> I<module> C<;> avant d'exécuter votre
+programme. Vous pouvez utiliser des apostrophes pour ajouter du code
+supplémentaire après le nom du module, par exemple, C<'-Mmodule
+qw(toto titi)'>.
+
+Si le premier caractère après B<-M> ou B<-m> est un moins (C<->),
+alors le 'use' est remplacé par 'no'.
+
+Un peu de sucre syntaxique intégré permet d'écrire
+B<-mmodule=toto,titi> ou B<-Mmodule=toto,titi> comme un raccouci de
+C<'-Mmodule qw(toto titi)'>. Cela évite de recourir à des apostrophes
+lorsqu'on importe des symboles.  Le code généré par
+B<-Mmodule=toto,titi> est C<use module split(/,/,q{toto,titi})>. Notez
+que la forme C<=> fait disparaître la distinction entre B<-m> et
+B<-M>.
+
+=item B<-n>
+
+indique à Perl de considérer votre programme comme entouré par la
+boucle suivante, qui le fait itérer sur les noms de fichiers passés en
+arguments, à la manière de B<sed -n> ou B<awk> :
+
+    while (<>) {
+        ...             # votre script va là
+    }
+
+Notez que les lignes ne sont pas affichées par défaut. Cf. B<-p> pour
+afficher les lignes traitées. Si un fichier passé en argument ne peut
+pas être ouvert, pour quelque raison que ce soit, Perl vous prévient,
+et passe au fichier suivant.
+
+Un moyen efficcace d'effacer tous les fichiers agés de plus d'une
+semaine :
+
+    find . -mtime +7 -print | perl -nle unlink
+
+C'est plus rapide que d'utiliser l'option B<-exec> de B<find>, car
+vous ne lancez plus un processus pour chaque fichier à effacer. Cela
+souffre du bug entraînant une mauvaise gestion des fins de lignes dans
+les chemins, que vous pouvez régler si vous... [phrase pas terminée
+dans la VO, NDT].
+
+Les blocs C<BEGIN> et C<END> peuvent être utilisés pour prendre le
+contrôle des opérations, avant ou après la boucle implicite du
+programme, comme dans B<awk>.
+
+=item B<-p>
+
+indique à Perl de considérer votre programme comme entouré par la
+boucle suivante, qui le fait itérer sur les noms de fichiers passés en
+arguments, un peu à la manière de B<sed>:
+
+   LINE:
+     while (<>) {
+        ...             # votre programme va là
+     } continue {
+        print or die "-p destination : $!\n";
+     }
+
+Si un fichier passé en argument ne peut pas être ouvert, pour quelque
+raison que ce soit, Perl vous prévient, et passe au fichier suivant.
+Notez que les lignes sont affichées automatiquement. Une erreur durant
+l'affichage est considérée comme fatale. Pour supprimmer les
+affichages, utilisez l'option B<-n>. L'option B<-p> prend le dessus
+sur B<-n>.
+
+Les blocs C<BEGIN> et C<END> peuvent être utilisés pour prendre le
+contrôle des opérations, avant ou après la boucle implicite, comme
+dans B<awk>.
+
+=item B<-P>
+
+indique à Perl de faire passer votre programme dans le pré-processeur
+C avant la compilation. Étant donné que les commentaires Perl et les
+directives de B<cpp> commencent avec le caractère #, il vaut mieux
+éviter de mettre des commentaires qui débutent par un mot réservé pour
+le pré-processeur comme "if", "else", ou "define".
+
+=item B<-s>
+
+active une analyse rudimentaire des arguments sur la ligne de commande
+situés après le nom du programme mais avant tout nom de fichier passé
+en argument (ou avant un B<-->). Toute option trouvée là est retirée
+de @ARGV et fixe la variable correspondante dans le programme Perl. Le
+programme suivant affiche "true" ("vrai", NDT) si et seulement si le
+programme est invoqué avec une option B<-xyz>, et "abc" s'il est
+invoqué avec B<-xyz=abc>.
+
+    #!/usr/bin/perl -s
+    if ($xyz) { print "$xyz\n"; }
+
+=item B<-S>
+
+fait en sorte que Perl utilise la variable d'environnement PATH pour
+rechercher le programme (à moins que le nom du script ne contienne des
+séparateurs de répertoires). Sur certaines plateformes, elle fait
+aussi ajouter par Perl des suffixes au nom de fichier tout pendant la
+recherche. Par exemple, sur les plateformes Win32, les suffixes ".bat"
+et ".cmd" sont ajoutés si la recherche du nom originel échoue, et si
+le nom ne se termine pas déjà par l'un de ces suffixes. Si votre Perl
+a été compilé avec DEBUGGING activé, donner l'option -Dp à Perl montre
+la progression de la recherche.
+
+Ceci est typiquement utilisé pour émuler le démarrage #! sur les
+plateformes qui ne le supportent pas. Cet exemple fonctionne sur de
+nombreuses plateformes ayant un shell compatible avec le Bourne shell:
+
+    #!/usr/bin/perl
+    eval 'exec /usr/bin/perl -wS $0 ${1+"$@"}'
+            if $running_under_some_shell;
+
+Le système ignore la première ligne et donne le programme à /bin/sh,
+qui essaye alors d'exécuter le programme Perl comme un script
+shell. Le shell exécute la deuxième ligne comme une commande de shell
+normale, et ainsi démarre l'interpréteur Perl. Sur certains systèmes,
+$0 ne contient pas toujours le chemin complet, l'option B<-S> dit donc
+à Perl de rechercher le programme si nécessaire. Après que Perl ait
+localisé le programme, il analyse les lignes et les ignore car la
+variable $running_under_some_shell n'est jamais vraie. Si le programme
+doit être interprété par csh, vous devrez remplacer C<${1+"$@"}> par
+C<$*>, même si cela ne comprend pas les espaces (et les autres
+caractères équivalents) inclus dans la liste d'arguments. Pour
+démarrer sh plutôt que csh, certains systèmes peuvent nécessiter le
+remplacement de la ligne #! par une contenant juste un deux points,
+qui sera poliment ignoré par Perl. D'autres systèmes ne peuvent pas
+contrôler cela, et ont besoin d'une construction totalement diabolique
+qui fonctionnera sous B<csh>, B<sh>, ou Perl, comme celle-ci :
+
+        eval '(exit $?0)' && eval 'exec perl -wS $0 ${1+"$@"}'
+        & eval 'exec /usr/bin/perl -wS $0 $argv:q'
+                if $running_under_some_shell;
+
+Si le nom de fichier fourni contient des séparateurs de répertoires
+(i.e. si c'est un chemin absolu ou relatif), et si le fichier n'est
+pas trouvé, les plateformes qui ajoutent des extensions de noms de
+fichiers le feront et essayeront de trouver le fichier avec ces
+extensions ajoutées, les unes après les autres.
+
+Sur les plateformes compatibles DOS, si le programme ne contient pas
+de séparateurs de répertoires, il sera d'abord recherché dans le
+répertoire courant avant d'être recherché dans le PATH. Sur les
+plateformes Unix, le programme sera recherché strictement dans le
+PATH.
+
+=item B<-T>
+
+force l'activation des vérifications de "souillure" pour que vous
+puissiez les tester. Ordinairement, ces vérifications sont faites
+seulement lorsque l'on exécute en setuid ou setgid. C'est une bonne
+idée que de les activer explicitement pour les programmes exécutés au
+nom de quelqu'un d'autre, comme par exemple les programmes CGI ou tout
+serveur internet que vous puissiez écrire en Perl. Voir L<perlsec>
+pour plus de détails. Pour des raisons de sécurité, cette option doit
+être vue par Perl très tôt ; cela signifie habituellement qu'elle doit
+apparaître tôt dans la ligne de commande ou sur la ligne #! pour les
+systèmes qui le supportent.
+
+=item B<-u>
+
+Cette option obsolète force Perl à écrire un coredump après la
+compilation de votre programme. Vous pouvez ensuite théoriquement
+prendre ce coredump et en faire un fichier exécutable en utilisant le
+programme B<undump> (non fourni). Ceci accélère le démarrage au
+détriment de l'espace disque (que vous pouvez minimiser en strippant
+l'exécutable. Mais un exécutable "hello world" fait encore environ
+200K sur ma machine). Si vous voulez exécuter une portion de votre
+programme avant le dump, utilisez l'opérateur dump() à la place. Note:
+la disponibilité de B<undump> est spécifique à la plateforme et peut
+ne pas être disponible pour un portage spécifique de Perl.
+
+Cette option a été remplacée par le nouveau backend du compilateur
+générateur de code Perl. Voir L<B> et L<B::Bytecode> pour plus de
+détails.
+
+=item B<-U>
+
+permet à Perl de réaliser des opérations non sûres. Couramment, les
+seules opérations "non sûres" sont l'effacement des répertoires par
+unlink lors d'une exécution en tant que superutilisateur, et
+l'exécution de programmes setuid avec les vérifications de souillures
+fatales transformées en avertissements. Notez que l'option B<-w> (ou
+la variable C<$^W>) doit être utilisée en même temps que cette option
+pour effectivement I<générer> les avertissements de vérification de
+souillure.
+
+=item B<-v>
+
+affiche les numéros de version de votre exécutable perl.
+
+=item B<-V>
+
+affiche un résumé des principales valeurs de configuration de perl et
+les valeurs actuelles de @INC.
+
+=item B<-V:>I<name>
+
+sort sur STDOUT la valeur de la variable de configuration nommée. Par
+exemple :
+
+    $ perl -V:man.dir
+
+fournira des indices probants sur la valeur que devrait contenir votre
+variable MANPATH pour accéder à la documentation de Perl.
+
+=item B<-w>
+
+affiche des avertissements concernant les constructions douteuses,
+telles que les noms des variables n'étant mentionnés qu'une seule fois
+et les variables scalaires utilisées avant d'être définies, les
+sous-programmes redéfinis, les références aux handles de fichiers
+indéfinis ou aux handles de fichiers ouverts en lecture seule et sur
+lesquels vous essayez d'écrire, les valeurs utilisées comme des
+nombres et qui n'ont pas l'air d'être des nombres, les tableaux
+utilisés comme s'ils étaient des scalaires, les sous-programmes
+récursifs se rappellent eux-mêmes plus de 100 fois, et d'innombrables
+autres choses.
+
+Cette option ne fait que valider la variable interne C<^$W>. Vous
+pouvez invalider certains avertissements ou les promouvoir en erreurs
+fatales de façon spécifique en utilisant des hooks C<__WARN__>, comme
+il est décrit dans L<perlvar> et dans L<perlfunc/warn>. Voir aussi
+L<perldiag> et L<perltrap>. Une nouvelle façon de gérer finement les
+avertissements est aussi disponible si vous voulez en manipuler des
+classes entières ; voir L<warnings> ou L<perllexwarn>.
+
+=item B<-W>
+
+valide tous les avertissements sans tenir compte de C<no warnings> ou
+de C<$^W>. Voir L<perllexwarn>.
+
+=item B<-X>
+
+invalide tous les avertissements sans tenir compte de C<use warnings>
+ou de C<$^W>. Voir L<perllexwarn>.
+
+=item B<-x> I<répertoire>
+
+dit à Perl que le programme est enfouie dans une masse de texte ACSII
+n'ayant rien à voir, comme par exemple un courrier électronique. Les
+déchets qui le précèdent seront ignorés jusqu'à la première ligne
+commençant par #! et contenant la chaîne "perl". Toute option
+significative sur cette ligne sera appliquée. Si un nom de répertoire
+est spécifié, Perl passera dans ce répertoire avant d'exécuter le
+programme. L'option B<-x> contrôle seulement la destruction des
+déchets qui précèdent le script. Le programme doit se terminer par
+C<__END__> si des déchets doivent être ignorés après lui (si on le
+désire, le programme peut traiter tout ou partie de ce qui le suit via
+le handle de fichier DATA).
+
+=back
+
+=head1 ENVIRONNEMENT
+
+=over 12
+
+=item HOME
+
+Utilisée si chdir n'a pas d'argument.
+
+=item LOGDIR
+
+Utilisée si chdir n'a pas d'argument et si HOME n'est pas fixée.
+
+=item PATH
+
+Utilisée lors de l'exécution de sous-processus, et dans la recherche
+du programme si B<-S> est utilisée.
+
+=item PERL5LIB
+
+Une liste de répertoires ponctuée de deux points dans lesquels on doit
+rechercher les fichiers de bibliothèques de Perl avant de les
+rechercher dans la bibliothèque standard et le répertoire
+courant. Tous les répertoires spécifiques à l'architecture aux
+endroits spécifiés sont automatiquement inclus s'ils existent. Si
+PERL5LIB n'est pas définie, PERLLIB est utilisée.
+
+Lors d'une exécution avec vérifications de souillure (soit parce que
+le programme est exécuté en setuid ou setgid, soit parce que l'option
+B<-T> est activée), aucune des deux variables n'est utilisée. Le
+script devrait dire à la place :
+
+    use lib "/my/directory";
+
+=item PERL5OPT
+
+Options de ligne de commande (switches). Les options dans cette
+variable sont considérées comme faisant partie de toute ligne de
+commande Perl. Seules les options B<-[DIMUdmw]> sont autorisée. Lors
+d'une exécution avec vérifications de souillure (puisque le programme
+est exécuté en setuid ou setgid, ou si l'option B<-T> est activée),
+cette variable est ignorée. Si PERL5OPT commence par B<-T>, la
+vérification sera activée, et toute les options suivantes seront
+ignorées.
+
+=item PERLLIB
+
+Une liste de répertoires ponctuée de deux points dans lesquels on doit
+rechercher les fichiers de bibliothèque de Perl avant de les
+rechercher dans la bibliothèque standard et le répertoire courant. Si
+PERL5LIB est définie, PERLLIB n'est pas utilisée.
+
+=item PERL5DB
+
+La commande utilisée pour charger le code du debuggueur. La valeur par
+défaut est :
+
+        BEGIN { require 'perl5db.pl' }
+
+=item PERL5SHELL (spécifique à la version WIN32)
+
+Peut être fixée vers un shell alternatif que perl doit utiliser en
+interne pour exécuter les commandes entre accents graves ou la
+commande system(). La valeur par défaut est C<cmd.exe /x/c> sous
+WindowsNT et C<command.com /c> sous Windows95. La valeur est
+considérée comme délimitée par des espaces. Précédez tout caractère
+devant être protégé (comme une espace ou une barre oblique inverse)
+par une barre oblique inverse.
+
+Notez que Perl n'utilise pas COMSPEC pour cela car COMSPEC a un haut
+degré de variabilité entre les utilisateurs, ce qui amène à des soucis
+de portabilité. De plus, perl peut utiliser un shell qui ne convienne
+pas à un usage interactif, et le fait de fixer COMSPEC vers un tel
+shell peut interférer avec le fonctionnement correct d'autres
+programmes (qui regardent habituellement COMSPEC pour trouver un shell
+permettant l'utilisation interactive).
+
+=item PERL_DEBUG_MSTATS
+
+Valable seulement si perl est compilé avec la fonction malloc inclue
+dans la distribution de perl (c'est-à-dire si C<perl -V:d_mymalloc>
+vaut 'define'). Si elle a une valeur, cela provoque un dump de
+statistiques d'utilisation de la mémoire après l'exécution. Si sa
+valeur est un entier supérieur à un, les statistiques d'utilisation de
+la mémoire sont aussi dumpées après la compilation.
+
+=item PERL_DESTRUCT_LEVEL
+
+Valable seulement si votre exécutable perl a été construit avec
+B<-DDEBUGGING>, ceci contrôle le comportement de la destruction
+globale des objets et autres références.
+
+=back
+
+Perl dispose aussi de variables d'environnement qui contrôlent comment
+Perl manipules les données spécifiques à un langage naturel
+particulier. Voir L<perllocale>.
+
+À part celles-ci, Perl n'utilise pas d'autres variables
+d'environnement, sauf pour les rendre disponibles au programme étant
+exécuté, et aux processus fils. Toutefois, les programmes exécutés en
+setuid feraient bien d'exécuter les lignes suivantes avant de faire
+quoi que ce soit d'autres, ne serait-ce que pour que les gens restent
+honnêtes :
+
+    $ENV{PATH}  = '/bin:/usr/bin';    # or whatever you need
+    $ENV{SHELL} = '/bin/sh' if exists $ENV{SHELL};
+    delete @ENV{qw(IFS CDPATH ENV BASH_ENV)};
+
+=head1 TRADUCTION
+
+=head2 Version
+
+Cette traduction française correspond à la version anglaise distribuée avec
+perl 5.6.0.  Pour en savoir plus concernant ces traductions, consultez
+L<http://perl.enstimac.fr/>.
+
+=head2 Traducteur
+
+Loic Tortay <F<loict@bougon.net>>
+Roland Trique <F<roland.trique@uhb.fr>>
+
+=head2 Relecture
+
+Personne pour l'instant.
+
