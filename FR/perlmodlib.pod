@@ -1,6 +1,6 @@
 =encoding iso-8859-1
 
-=head1 NOM
+=head1 NAME/NOM
 
 perlmodlib - Pour construire de nouveaux modules et trouver les existants
 

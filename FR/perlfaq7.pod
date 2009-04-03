@@ -2,7 +2,7 @@
 
 =head1 NAME/NOM
 
-perlfaq7 - Questions générales sur le langage Perl ($Revision: 1.1 $, $Date: 2006/09/26 08:08:41 $)
+perlfaq7 - Questions générales sur le langage Perl
 
 =head1 DESCRIPTION
 

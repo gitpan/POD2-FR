@@ -2,7 +2,7 @@
 
 =head1 NAME/NOM
 
-perlfaq2 - Trouver et apprendre Perl ($Revision: 1.1 $, $Date: 2006/09/26 08:08:41 $)
+perlfaq2 - Trouver et apprendre Perl
 
 =head1 DESCRIPTION
 

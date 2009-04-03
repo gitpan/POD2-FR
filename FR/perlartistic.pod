@@ -225,7 +225,7 @@ IMPLICITES DE QUALITÉ COMMERCIALE OU D'ADÉQUATION À UN OBJECTIF PARTICULIER.
 
 =back
 
-Fin. 
+Fin.
 
 =head1 TRADUCTION
 
@@ -233,7 +233,7 @@ Fin.
 
 Cette traduction française correspond à la version anglaise
 (L<http://www.perl.com/pub/language/misc/Artistic.html>). C'est aussi celle
-distribuée avec la version perl 5.8.5.
+distribuée avec la version perl 5.10.0.
 
 =head2 Traducteur
 

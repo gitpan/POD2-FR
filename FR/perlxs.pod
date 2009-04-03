@@ -1,6 +1,6 @@
 =encoding iso-8859-1
 
-=head1 NOM
+=head1 NAME/NOM
 
 perlxs - Manuel de référence du langage XS
 

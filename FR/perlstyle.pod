@@ -332,7 +332,7 @@ Soyez gentils.
 =head2 Version
 
 Cette traduction française correspond à la version anglaise distribuée avec
-perl 5.8.8.  Pour en savoir plus concernant ces traductions, consultez
+perl 5.10.0.  Pour en savoir plus concernant ces traductions, consultez
 L<http://perl.enstimac.fr/>.
 
 =head2 Traducteur

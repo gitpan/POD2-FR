@@ -2,7 +2,7 @@
 
 =head1 NAME/NOM
 
-perlfaq8 - Interactions avec le système ($Revision: 1.1 $, $Date: 2006/09/26 08:08:42 $)
+perlfaq8 - Interactions avec le système
 
 =head1 DESCRIPTION
 

@@ -983,8 +983,6 @@ montrer par Perl4 uniquement pour les scalaires.
 
 =over 5
 
-*****
-
 =item * Les éléments des liste d'arguments des formats sont évalués dans un contexte de liste
 
 Les éléments des listes d'arguments pour les formats sont désormais
@@ -1681,7 +1679,7 @@ officiellement comme étant des bugs, ils seront corrigés et retirés.
 =head2 Version
 
 Cette traduction française correspond à la version anglaise distribuée avec
-perl 5.8.8.  Pour en savoir plus concernant ces traductions, consultez
+perl 5.10.0.  Pour en savoir plus concernant ces traductions, consultez
 L<http://perl.enstimac.fr/>.
 
 =head2 Traducteur

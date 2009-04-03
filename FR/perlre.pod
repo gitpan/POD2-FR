@@ -1,30 +1,37 @@
 =encoding iso-8859-1
 
-=head1 NAME/NOM
+=head1 NAME/NOM X<expression rationnelle> X<expression régulière> X<regex> X<regexp>
 
 perlre - Les expressions rationnelles en Perl
 
 =head1 DESCRIPTION
 
-Cette page décrit la syntaxe des expressions rationnelles en Perl. Dans
-L<perlop/"Opérateurs d'expression rationnelle">, vous trouverez une
-présentation des opérateurs C<m//>, C<s///>, C<qr//> et C<??> avec une
-description de l'I<usage> des expressions rationnelles dans des opérations de
-reconnaissances assortie de nombreux exemples. (NdT: on emploie couramment le
-terme "expression régulière" car le terme anglais est "regular expression" qui
-s'abrège en "regexp". Mais ne nous y trompons pas, en français, ce sont bien
-des "expressions rationnelles".)
+Cette page décrit la syntaxe des expressions rationnelles en Perl.
+(NdT: on emploie couramment le terme "expression régulière" car le
+terme anglais est "regular expression" qui s'abrège en "regexp". Mais
+ne nous y trompons pas, en français, ce sont bien des "expressions
+rationnelles".)
+
+Si vous n'avez jamais utilisé les expressions rationnelles, vous
+trouverez une rapide introduction dans L<perlrequick> et un tutoriel
+d'introduction un peu plus long dans L<perlretut>.
+
+Dans L<perlop/"Opérateurs d'expression rationnelle">, vous trouverez
+une présentation des opérateurs C<m//>, C<s///>, C<qr//> et C<??> avec
+une description de l'I<usage> des expressions rationnelles dans des
+opérations de reconnaissances assortie de nombreux exemples.
 
 Les opérations de reconnaissances peuvent utiliser différents
 modificateurs. Les modificateurs qui concernent l'interprétation des
 expressions rationnelles elles-mêmes sont présentés ici. Pour les
-modificateurs qui modifient l'usage des expressions rationnelles fait par
-Perl, regarder L<perlop/"Opérateurs d'expression rationnelle"> et
+modificateurs qui modifient l'usage des expressions rationnelles fait
+par Perl, regarder L<perlop/"Opérateurs d'expression rationnelle"> et
 L<perlop/"Les détails sordides de l'interprétation des chaînes">.
 
 =over 4
 
 =item i
+X</i> X<regex, insensibilité à la casse> X<regexp, insensibilité à la casse> X<expression rationnelle, insensibilité à la casse>
 
 Reconnaissance de motif indépendamment de la casse (majuscules/minuscules).
 
@@ -32,12 +39,14 @@ Si C<use locale> est actif, la table des majuscules/minuscules est celle du
 locale courant. Voir L<perllocale>.
 
 =item m
+X</m> X<regex, multi-lignes> X<regexp, multi-lignes> X<expression rationnelle, multi-lignes>
 
 Permet de traiter les chaînes multi-lignes. Les caractères "^" et "$"
 reconnaissent alors n'importe quel début ou fin de ligne plutôt qu'au début
 ou à la fin de la chaîne.
 
 =item s
+X</s> X<regex, une seule ligne> X<regexp, une seule ligne> X<expression rationnelle, une seule ligne>
 
 Permet de traiter une chaîne comme une seule ligne. Le caractère "."
 reconnaît alors n'importe quel caractère, même une fin de ligne qui
@@ -52,6 +61,7 @@ la fin de la chaîne (ou juste avant le retour à la ligne final). Combinés, par
 retour à la ligne dans la chaîne.
 
 =item x
+X</x>
 
 Augmente la lisibilité de vos motifs en autorisant les espaces et les
 commentaires.
@@ -77,6 +87,7 @@ rendent les expressions rationnelles de Perl plus lisibles. Faites attention à
 ne pas inclure le délimiteur de motif dans un commentaire (perl n'a aucun
 moyen de savoir que vous ne vouliez pas terminer le motif si tôt). Voir le
 code de suppression des commentaires C dans L<perlop>.
+X</x>
 
 =head2 Expressions rationnelles
 
@@ -88,14 +99,16 @@ Version 8 par Henry Spencer. Voir L<Version 8 des expressions rationnelles>
 pour de plus amples informations.
 
 Notamment, les méta-caractères suivants gardent leur sens à la S<I<egrep> :>
+X<méta-caractère>
+X<\> X<^> X<.> X<$> X<|> X<(> X<()> X<[> X<[]>
 
-    \   Annule le meta-sens du meta-caractere qui suit
-    ^   Reconnait le debut de la ligne
-    .   Reconnait n'importe quel caractere (sauf le caractere nouvelle ligne)
-    $   Reconnait la fin de la ligne (ou juste avant le caractere nouvelle ligne final)
+    \   Annule le meta-sens du meta-caractère qui suit
+    ^   Reconnaît le debut de la ligne
+    .   Reconnaît n'importe quel caractère (sauf le caractère nouvelle ligne)
+    $   Reconnaît la fin de la ligne (ou juste avant le caractère nouvelle ligne final)
     |   Alternative
     ()  Groupement
-    []  Classe de caracteres
+    []  Classe de caractères
 
 Par défaut, le caractère "^" ne peut reconnaître que le début de la ligne et
 le caractère "$" que la fin (ou juste avant le caractère nouvelle ligne de la
@@ -107,6 +120,7 @@ caractère nouvelle ligne et "$" juste avant. Pour ce faire, au prix d'un léger
 ralentissement, vous devez utiliser le modificateur C</m> dans l'opérateur de
 reconnaissance de motif.  (Les anciens programmes obtenaient ce résultat en
 positionnant C<$*> mais cette pratique est maintenant désapprouvée.)
+X<^> X<$> X</m>
 
 Pour faciliter les substitutions multi-lignes, le méta-caractère "." ne
 reconnaît jamais un caractère nouvelle ligne à moins d'utiliser le
@@ -114,23 +128,26 @@ modificateur C</s> qui demande à Perl de considérer la chaîne comme une seule
 ligne même si ce n'est pas le cas. Le modificateur C</s> passe outre le
 réglage de C<$*> au cas où vous auriez quelques vieux codes qui le
 positionnerait dans un autre module.
+X<.> X</s>
 
 Les quantificateurs standards suivants sont S<reconnus :>
+X<méta-caractère> X<quantificateur> X<*> X<+> X<?> X<{n}> X<{n,}> X<{n,m}>
 
-    *      Reconnait 0 fois ou plus
-    +      Reconnait 1 fois ou plus
-    ?      Reconnait 0 ou 1 fois
-    {n}    Reconnait n fois exactement
-    {n,}   Reconnait au moins n fois
-    {n,m}  Reconnait au moins n fois mais pas plus de m fois
+    *      Reconnaît 0 fois ou plus
+    +      Reconnaît 1 fois ou plus
+    ?      Reconnaît 0 ou 1 fois
+    {n}    Reconnaît n fois exactement
+    {n,}   Reconnaît au moins n fois
+    {n,m}  Reconnaît au moins n fois mais pas plus de m fois
 
-(Si une accolade apparaît dans n'importe quel autre contexte, elle est traitée
-comme un caractère normal.) Le quantificateur "*" est équivalent à C<{0,}>, le
-quantificateur "+" à C<{1,}> et le quantificateur "?" à C<{0,1}>. n et m sont
-limités à des valeurs entières (!) inférieures à une valeur fixée lors de la
-compilation de perl. Habituellement cette valeur est 32766 sur la plupart des
-plates-formes. La limite réelle peut être trouvée dans le message d'erreur
-engendré par le code S<suivant :>
+(Si une accolade apparaît dans n'importe quel autre contexte, elle est
+traitée comme un caractère normal. En particulier, la borne minimale
+n'est pas optionnelle) Le quantificateur "*" est équivalent à C<{0,}>,
+le quantificateur "+" à C<{1,}> et le quantificateur "?" à C<{0,1}>. n
+et m sont limités à des valeurs entières (!) inférieures à une valeur
+fixée lors de la compilation de perl. Habituellement cette valeur est
+32766 sur la plupart des plates-formes. La limite réelle peut être
+trouvée dans le message d'erreur engendré par le code S<suivant :>
 
     $_ **= $_ , / {$_} / for 2 .. 42;
 
@@ -140,16 +157,20 @@ donné) sans empêcher la reconnaissance du reste du motif. Si vous voulez qu'il
 tente de se reconnaître un minimum de fois, il faut ajouter le caractère "?"
 juste après le quantificateur. Sa signification ne change pas. Seule sa S<«
 gourmandise »> S<change :>
+X<méta-caractère> X<gourmandise> X<gourmand>
+X<?> X<*?> X<+?> X<??> X<{n}?> X<{n,}?> X<{n,m}?>
 
-    *?     Reconnait 0 fois ou plus
-    +?     Reconnait 1 fois ou plus
-    ??     Reconnait 0 ou 1 fois
-    {n}?   Reconnait n fois exactement
-    {n,}?  Reconnait au moins n fois
-    {n,m}? Reconnait au moins n fois mais pas plus de m fois
+    *?     Reconnaît 0 fois ou plus
+    +?     Reconnaît 1 fois ou plus
+    ??     Reconnaît 0 ou 1 fois
+    {n}?   Reconnaît n fois exactement
+    {n,}?  Reconnaît au moins n fois
+    {n,m}? Reconnaît au moins n fois mais pas plus de m fois
 
 Puisque les motifs sont traités comme des chaînes entre guillemets, les
 séquences suivantes S<fonctionnent :>
+X<\t> X<\n> X<\r> X<\f> X<\a> X<\l> X<\u> X<\L> X<\U> X<\E> X<\Q>
+X<\0> X<\c> X<\N> X<\x>
 
     \t          tabulation             (HT, TAB)
     \n          nouvelle ligne         (LF, NL)
@@ -157,17 +178,17 @@ séquences suivantes S<fonctionnent :>
     \f          page suivante          (FF)
     \a          alarme (bip)           (BEL)
     \e          escape (pensez a troff)(ESC)
-    \033        caractere en octal (pensez au PDP-11)
-    \x1B        caractere hexadecimal
-    \x{263a}    caractere hexadecimal etendu (Unicode SMILEY)
-    \c[         caractere de controle
-    \N{nom}     caractere nomme
-    \l          converti en minuscule le caractere suivant (pensez a vi)
-    \u          converti en majuscule le caractere suivant (pensez a vi)
-    \L          converti en minuscule jusqu'au prochain \E (pensez a vi)
-    \U          converti en majuscule jusqu'au prochain \E (pensez a vi)
+    \033        caractère en octal (pensez au PDP-11)
+    \x1B        caractère hexadecimal
+    \x{263a}    caractère hexadecimal etendu (Unicode SMILEY)
+    \c[         caractère de controle
+    \N{nom}     caractère nomme
+    \l          convertit en minuscule le caractère suivant (pensez a vi)
+    \u          convertit en majuscule le caractère suivant (pensez a vi)
+    \L          convertit en minuscule jusqu'au prochain \E (pensez a vi)
+    \U          convertit en majuscule jusqu'au prochain \E (pensez a vi)
     \E          fin de modification de casse (pensez a vi)
-    \Q          desactive les meta-caracteres de motif jusqu'au prochain \E
+    \Q          desactive les meta-caractères de motif jusqu'au prochain \E
 
 Si C<use locale> est actif, la table de majuscules/minuscules utilisée par
 C<\l>, C<\L>, C<\u> et C<\U> est celle du locale courant. Voir
@@ -181,36 +202,49 @@ C<\$> ou C<\@>. Vous êtes obligés d'écrire quelque chose comme
 C<m/\Quser\E\@\Qhost/>.
 
 Perl définit aussi les séquences S<suivantes :>
+X<méta-caractère>
+X<\w> X<\W> X<\s> X<\S> X<\d> X<\D> X<\X> X<\p> X<\P> X<\C>
+X<mot> X<espace>
 
-    \w  Reconnait un caractere de "mot" (alphanumerique plus "_")
-    \W  Reconnait un caractere de non "mot"
-    \s  Reconnait un caractere d'espace.
-    \S  Reconnait un caractere autre qu'un espace
-    \d  Reconnait un chiffre
-    \D  Reconnait un caractere autre qu'un chiffre
-    \pP Reconnait la propriete P (nommee). Utilisez \p{Prop}
-        pour des noms longs
-    \X  Reconnait le sequence de caractere Unicode etendue
-        equivalent a (?:\\PM\pM*)
-    \C  Reconnait un caractere d'un seul octet meme sous utft8.
+    \w  Reconnaît un caractère de "mot" (alphanumérique plus "_")
+    \W  Reconnaît un caractère de non "mot"
+    \s  Reconnaît un caractère d'espace.
+    \S  Reconnaît un caractère autre qu'un espace
+    \d  Reconnaît un chiffre
+    \D  Reconnaît un caractère autre qu'un chiffre
+    \pP Reconnaît la propriété P (nommée). Utilisez \p{Prop}
+        pour les noms longs
+    \X  Reconnaît une séquence d'un caractère Unicode étendue,
+        équivalent à (?:\PM\pM*)
+    \C  Reconnaît un caractère (d'un seul octet) meme sous utft8.
 
-C<\w> reconnaît un seul caractère alphanumérique ou C<_>, pas à un mot
-entier. Pour reconnaître un mot entier au sens des identificateurs Perl, vous
-devez utiliser C<\w+> (ce qui n'est pas la même chose que reconnaître les mots
-anglais ou français). Si C<use locale> est actif, la liste de caractères
-alphanumériques utilisés par C<\w> dépend du locale courant. Voir
-L<perllocale>. Vous pouvez utiliser C<\w>, C<\W>, C<\s>, C<\S>, C<\d>, et
-C<\D> à l'intérieur d'une classe de caractères mais si vous essayez des les
-utiliser comme borne d'un intervalle, ce n'est plus un intervalle et le "-"
-est compris littéralement. Voir L<utf8> pour les détails à propos de C<\pP>,
-C<\PP> et C<\X>.
+C<\w> reconnaît un seul caractère alphanumérique (un caractère de
+l'alphabet ou un chiffre) ou C<_>, pas à un mot entier. Pour
+reconnaître un mot entier au sens des identificateurs Perl, vous devez
+utiliser C<\w+> (ce qui n'est pas la même chose que reconnaître les
+mots anglais ou français). Si C<use locale> est actif, la liste de
+caractères alphanumériques couverts par C<\w> dépend du locale
+courant. Voir L<perllocale>. Vous pouvez utiliser C<\w>, C<\W>, C<\s>,
+C<\S>, C<\d>, et C<\D> à l'intérieur d'une classe de caractères mais
+si vous essayez des les utiliser comme borne d'un intervalle, ce n'est
+plus un intervalle et le "-" est compris littéralement. Si Unicode est
+actif, C<\s> reconnaître aussi "\x{85}", "\x{2028} et "\x{2029}". Voir
+L<perlunicode> pour les détails à propos de C<\pP>, C<\PP> et C<\X>,
+et L<perluniintro> pour tout ce qui concerne Unicode en général. Vous
+pouvez définir de nouvelles propriétés pour C<\p> et C<\P>, voir
+L<perlunicode>.
+X<\w> X<\W> X<mot>
 
 La syntaxe POSIX des classes de S<caractères :>
+X<classe de caractères>
 
    [:class:]
 
 est aussi disponible. Les classes disponibles et leur équivalent via la barre
 oblique inversée (si il existe) sont les S<suivants :>
+X<classe de caractères>
+X<alpha> X<alnum> X<ascii> X<blank> X<cntrl> X<digit> X<graph>
+X<lower> X<print> X<punct> X<space> X<upper> X<word> X<xdigit>
 
     alpha
     alnum
@@ -227,12 +261,23 @@ oblique inversée (si il existe) sont les S<suivants :>
     word        \w    [3]
     xdigit
 
-[1] Une extension GNU équivalente à C<[ \t]> (tous les espaces horizontaux).
+=over
 
-[2] Pas excatement équivalent à C<\s> puisqu C<[[:space:]]> inclut aussi le
-(très rare) tabulateur vertical : C<"\ck"> ou C<chr(11)>.
+=item [1]
 
-[3] Une extension Perl
+Une extension GNU équivalente à C<[ \t]> (tous les espaces
+horizontaux).
+
+=item [2]
+
+Pas exactement équivalent à C<\s> puisque C<[[:space:]]> inclut aussi
+le (très rare) tabulateur vertical : C<"\ck"> ou C<chr(11)>.
+
+=item [3]
+
+Une extension Perl, voir plus loin.
+
+=back
 
 Par exemple, utilisez C<[:upper:]> pour reconnaître tous les caractères
 minuscules. Remarquez que les crochets (C<[]>) font partie de la construction
@@ -240,12 +285,16 @@ C<[::]> et non de la classe de caractères. Par S<exemple :>
 
     [01[:alpha:]%]
 
-reconnaît les caractères un, deux, pourcent et tous les caractères
-alphabétiques.
+reconnaît les chiffres un et deux, le caractère pourcent et tous les
+caractères alphabétiques.
 
-Si le pragma C<utf8> est actif, vous aurez les équivalences suivantes avec
-les constructions Unicode S<\p{} :>
+Voici un tableau d'équivalence des classes avec les constructions
+Unicode \p{} et avec les classes représentées par un caractère précédé
+d'un backslash lorsqu'elles S<existent :>
+X<classe de caractères> X<\p> X<\P>
 
+    [:...:]     \p{...}      backslash
+    
     alpha       IsAlpha
     alnum       IsAlnum
     ascii       IsASCII
@@ -264,64 +313,80 @@ les constructions Unicode S<\p{} :>
 
 Par exemple C<[:lower:]> et C<\p{IsLower}> sont équivalents.
 
-Si le pragma C<utf8> n'est pas actif mais que le pragma C<locale> l'est, les
-classes sont corrélées via l'interface isalpha(3) (sauf pour 'word' et
-'blank').
+Si le pragma C<utf8> n'est pas actif mais que le pragma C<locale>
+l'est, les classes sont corrélées via l'interface isalpha(3) (sauf
+pour "word" et "blank").
 
 Les classes nommées non évidentes S<sont :>
 
 =over 4
 
 =item cntrl
+X<cntrl>
 
-N'importe quel caractère de contrôle. Ce sont habituellement des caractères
-qui ne produisent aucune sortie mais qui, par contre, modifie le S<terminal :>
-par exemple newline (passage à la ligne) et backspace (retour arrière) sont
-des caractères de contrôle. Tous les caractères pour lesquels ord() renvoie
-une valeur inférieure à 32 sont des caractères de contrôle (avec l'ASCII, les
-codages de caractères ISO Latin et Unicode).
+N'importe quel caractère de contrôle. Ce sont habituellement des
+caractères qui ne produisent aucune sortie mais qui, par contre,
+modifie le S<terminal :> par exemple newline (passage à la ligne) et
+backspace (retour arrière) sont des caractères de contrôle. Tous les
+caractères pour lesquels ord() renvoie une valeur inférieure à 32 sont
+des caractères de contrôle (avec l'ASCII, les codages de caractères
+ISO Latin et Unicode) ainsi que le caractère dont la valeur ord() vaut
+127 (C<DEL>).
 
 =item graph
+C<graph>
 
-N'importe quel caractère alphanumériques ou de ponctuation (ou spécial).
+N'importe quel caractère alphanumérique ou de ponctuation (ou spécial).
 
 =item print
+X<print>
 
-N'importe quel caractère alphanumériques, de ponctuation (ou spécial) ou
-espace.
+N'importe quel caractère alphanumérique, de ponctuation (ou spécial)
+ou espace.
 
 =item punct
+X<punct>
 
 N'importe quel caractère de ponctuation (ou spécial).
 
 =item xdigit
+X<xdigit>
 
-Un chiffre hexadécimal. Bien que peut utile (C<[0-9A-Fa-f]> aurait très bien
-fonctionner), elle est inclue pour la complétude.
+Un chiffre hexadécimal. Bien que peu utile (C<[0-9A-Fa-f]> fonctionne
+très bien), elle est inclue pour la complétude.
 
 =back
 
 Vous pouvez utilisez la négation d'une classe de caractères [::] en préfixant
 son nom par un '^'. C'est une extension de Perl. Par S<exemple :>
+X<classe de caractères, négation>
 
-    POSIX       trad. Perl  utf8 Perl
+    POSIX       traditionnel  Unicode
 
-    [:^digit:]      \D      \P{IsDigit}
-    [:^space:]      \S      \P{IsSpace}
-    [:^word:]       \W      \P{IsWord}
+    [:^digit:]      \D        \P{IsDigit}
+    [:^space:]      \S        \P{IsSpace}
+    [:^word:]       \W        \P{IsWord}
 
-Les classes de caractères POSIX [.cc.] et [=cc=] sont reconnues B<sans> être
-supportées. Une tentative d'utilisation de ces classes provoquera une erreur.
+Perl respecte le standard POSIX puisque les classes de caractères
+POSIX ne sont supportées qu'à l'intérieur d'une classe de
+caractères. Les deux classes de caractères POSIX [.cc.] et [=cc=] sont
+reconnues B<sans> être S<supportées :> toute tentative d'utilisation
+de ces classes provoquera une erreur.
 
 Perl définit les assertions de longueur nulle S<suivantes :>
+X<assertion de longueur nulle> X<assertion>
+X<regex, assertion de longueur nulle>
+X<regexp, assertion de longueur nulle>
+X<expression rationnelle, assertion de longueur nulle>
+X<\b> X<\B> X<\A> X<\Z> X<\z> X<\G>
 
-    \b  Reconnait la limite d'un mot
-    \B  Reconnait autre chose qu'une limite de mot
-    \A  Reconnait uniquement le debut de la chaine
-    \Z  Reconnait uniquement la fin de la chaine (ou juste avant le
-        caractere de nouvelle ligne final)
-    \z  Reconnait uniquement la fin de la chaine
-    \G  Reconnait l'endroit ou s'est arrete le precedent m//g
+    \b  Reconnaît la limite d'un mot
+    \B  Reconnaît autre chose qu'une limite de mot
+    \A  Reconnaît uniquement le début de la chaîne
+    \Z  Reconnaît uniquement la fin de la chaîne (ou juste avant le
+        caractère de nouvelle ligne final)
+    \z  Reconnaît uniquement la fin de la chaîne
+    \G  Reconnaît l'endroit ou s'est arrete le precedent m//g
         (ne fonctionne qu'avec /g)
 
 Une limite de mot (C<\b>) est définie comme le point entre deux caractères qui
@@ -334,22 +399,31 @@ multiples quand le modificateur C</m> est utilisé alors que "^" et "$"
 reconnaissent toutes les limites de lignes internes. Pour reconnaître la fin
 réelle de la chaîne, en tenant compte du caractère nouvelle ligne, vous devez
 utiliser C<\z>.
+X<\b> X<\A> X<\Z> X<\z> X</m>
 
 C<\G> est utilisé pour enchaîner plusieurs mises en correspondance (en
-utilisant C<m//g>). Voir L<perlop/"Opérateurs d'expression rationnelle">.  Il
-est aussi utile lorsque vous écrivez un analyseur lexicographique à la C<lex>
-ou lorsque vous avez plusieurs motifs qui doivent reconnaître des sous-chaînes
-successives de votre chaîne. Voir la référence précédente. L'endroit réel à
-partir duquel C<\G> va être reconnu peut être modifié en affectant une
-nouvelle valeur à C<pos()>. Voir L<perlfunc/pos>.
+utilisant C<m//g>). Voir L<perlop/"Opérateurs d'expression
+rationnelle">.  Il est aussi utile lorsque vous écrivez un analyseur
+lexicographique à la C<lex> ou lorsque vous avez plusieurs motifs qui
+doivent reconnaître des sous-chaînes successives de votre chaîne. Voir
+la référence précédente. L'endroit réel à partir duquel C<\G> va être
+reconnu peut être modifié en affectant une nouvelle valeur à
+C<pos()>. Voir L<perlfunc/pos>. Actuellement, C<\G> n'est utilisable
+que lorsqu'il est placé en tout début de motif; bien qu'utilisable
+partout en théorie, comme dans C</(?<=\G..)./g>, quelques cas (comme,
+par exemple, C</.\G/g>) posent problème et il est donc recommandé de
+ne pas le faire.
+X<\G>
 
 La construction C<(...)> crée des zones de mémorisation (des
-sous-motifs). Pour vous référer au <n>-ième sous-motifs, utilisez \<n> à
-l'intérieur du motif. À l'extérieur du motif, utilisez toujours "$" à la place
-de "\" devant n. (Bien que la notation \n fonctionne en de rares occasions à
-l'extérieur du motif courant, vous ne devriez pas compter dessus. Voir
-l'avertissement au sujet de \1 et de $1.) Une référence à un sous-motif
-mémorisé est appelée une référence arrière.
+sous-motifs). Pour vous référer au I<n>-ième sous-motifs, utilisez
+\I<n> à l'intérieur du motif. À l'extérieur du motif, utilisez
+toujours "$" à la place de "\" devant I<n>. (Bien que la notation
+\I<n> fonctionne en de rares occasions à l'extérieur du motif courant,
+vous ne devriez pas compter dessus. Voir l'avertissement au sujet de
+\1 et de $1.) Une référence à un sous-motif mémorisé est appelée une
+référence arrière.
+X<regex, mémorisation de sous-motifs> X<regexp, mémorisation de sous-motifs> X<expression rationnelle, mémorisation de sous-motifs> X<référence arrière>
 
 Vous pouvez utiliser autant de sous-motifs que nécessaire. Par contre, Perl
 utilise les séquences \10, \11, etc. comme des synonymes de \010, \011,
@@ -375,42 +449,58 @@ S<Exemples :>
         $seconds = $3;
     }
 
-Plusieurs variables spéciales se réfèrent à des portions de la dernière
-reconnaissance.  C<$+> renvoie le dernier sous-motif entre parenthèses
-reconnu. C<$&> renvoie le dernier motif reconnu. (C<$0> était utilisé pour le
-même usage mais maintenant, il renvoie le nom du programme.) C<$`> renvoie
-tout ce qui est avant le motif reconnu. C<$'> renvoie tout ce qui est après le
-motif reconnu.
+Plusieurs variables spéciales se réfèrent à des portions de la
+dernière reconnaissance.  C<$+> renvoie le dernier sous-motif entre
+parenthèses reconnu. C<$&> renvoie le dernier motif
+reconnu. (Autrefois C<$0> était utilisé pour le même usage mais
+maintenant, il renvoie le nom du programme.) C<$`> renvoie tout ce qui
+est avant le motif reconnu. C<$'> renvoie tout ce qui est après le
+motif reconnu. Et C<$^N> renvoie ce qui a été reconnu par le dernier
+sous-motif refermé. C<$^N> peut-être utilisé dans les motifs étendus
+(voir plus bas), par exemple pour affecter un sous-motif à une
+variable.
+X<$+> X<$^N> X<$&> X<$`> X<$'>
 
 Les variables numérotées ($1, $2, $3, etc.) et les variables spéciales
-précédentes (C<$+>, C<$&>, C<$`> et C<$'>) ont toutes une portée dynamique
-jusqu'à la fin du bloc englobant ou jusqu'à la prochaine reconnaissance
-réussie selon ce qui arrive en premier. (Voir L<perlsyn/"Compound
-Statements">.)
+ci-dessus (C<$+>, C<$&>, C<$`>, C<$'> et C<$^N>) ont toutes une portée
+dynamique allant jusqu'à la fin du bloc englobant ou jusqu'à la
+prochaine reconnaissance réussie selon ce qui arrive en premier. (Voir
+L<perlsyn/"Instructions composées">.)
+X<$+> X<$^N> X<$&> X<$`> X<$'>
+X<$1> X<$2> X<$3> X<$4> X<$5> X<$6> X<$7> X<$8> X<$9>
 
-S<B<Attention> :> à partir du moment où perl voit que vous avez besoin de
-l'une des variables C<$&>, C<$`> ou C<$'> quelque part dans votre programme,
-il les calculera à chaque reconnaissance de motif et ce pour tous les
-motifs. Cela peut ralentir votre programme. Le même mécanisme est utilisé lors
-de l'utilisation de $1, $2, etc.. Ce ralentissement a donc lieu aussi pour les
-motifs mémorisant des sous-motifs. (Pour éviter ce ralentissement tout en
-conservant la possibilité de regroupement, utilisez l'extension C<(?:...)> à
-la place.) Mais si vous n'utilisez pas $&, etc. dans vos scripts alors vos
-motifs I<sans> mémorisation ne seront pas pénalisés. Donc, évitez C<$&>, C<$'>
-et C<$`> si vous le pouvez. Dans le cas contraire (et certains algorithmes en
-ont réellement besoin), si vous les utilisez une fois, utilisez-les partout
-car vous en supportez déjà le coût. Depuis la version 5.005, C<$&> n'est plus
-aussi coûteux que les deux autres.
+S<B<Note> :> en Perl, l'échec d'une tentative de reconnaissance ne
+réinitialise pas ces variables. Cela facilite l'écriture de codes qui
+testent une succession de cas de plus en plus spécifiques et qui
+mémorisent la meilleure reconnaissance.
 
-Les méta-caractères précédés d'un caractère barre oblique inversée en Perl
-sont alphanumériques tels C<\b>, C<\w>, C<\n>. À l'inverse d'autres langages
-d'expressions rationnelles, il n'y a pas de symbole précédé d'un caractère
-barre oblique inversée qui ne soit pas alphanumérique. Donc tout ce qui
-ressemble à \\, \(, \), \E<lt>, \E<gt>, \{, ou \} est toujours interprété
-littéralement et non comme un méta-caractère. Ceci est utilisé pour désactiver
-(ou «quoter») les éventuels méta-caractères présents dans une chaîne que vous
-voulez utiliser comme motif. Tout simplement, il vous suffit de précéder tous
-les caractère non-"mot" par un caractère barre oblique S<inversée :>
+S<B<Attention> :> à partir du moment où perl voit que vous avez besoin
+de l'une des variables C<$&>, C<$`> ou C<$'> quelque part dans votre
+programme, il les calculera à chaque reconnaissance de motif et ce
+pour tous les motifs. Cela peut ralentir considérablement votre
+programme. Le même mécanisme est utilisé lors de l'utilisation de $1,
+$2, etc.. Ce ralentissement a donc lieu aussi pour les motifs
+mémorisant des sous-motifs. (Pour éviter ce ralentissement tout en
+conservant la possibilité d'utiliser des regroupements, utilisez
+l'extension C<(?:...)> à la place.) Mais si vous n'utilisez pas $&,
+etc. dans vos scripts alors vos motifs I<sans> mémorisation ne seront
+pas pénalisés. Donc, évitez C<$&>, C<$'> et C<$`> si vous le
+pouvez. Dans le cas contraire (et certains algorithmes en ont
+réellement besoin), si vous les utilisez une fois, utilisez-les
+partout car vous en supportez déjà le coût. Depuis la version 5.005,
+C<$&> n'est plus aussi coûteux que les deux autres.
+X<$&> X<$`> X<$'>
+
+Les méta-caractères précédés d'un caractère barre oblique inversée en
+Perl sont alphanumériques tels C<\b>, C<\w>, C<\n>. À l'inverse
+d'autres langages d'expressions rationnelles, il n'y a pas de symbole
+précédé d'un caractère barre oblique inversée qui ne soit pas
+alphanumérique. Donc tout ce qui ressemble à \\, \(, \), \E<lt>,
+\E<gt>, \{, ou \} est toujours interprété littéralement et non comme
+un méta-caractère. Ceci est utilisé pour désactiver (ou «quoter») les
+éventuels méta-caractères présents dans une chaîne que vous voulez
+utiliser comme motif. Tout simplement, il vous suffit de précéder tous
+les caractères non-"mot" par un caractère barre oblique S<inversée :>
 
     $pattern =~ s/(\W)/\\$1/g;
 
@@ -420,50 +510,54 @@ soit la séquence C<\Q> pour désactiver les éventuels S<méta-caractères :>
 
     /$unquoted\Q$quoted\E$unquoted/
 
-Sachez que si vous placez un backspace littérale (ceux qui ne sont pas dans
-des variables interpolées) entre C<\Q> et C<\E>, l'interpolation peut vous
-amener des résultats très étonnants. Si vous avez I<besoin> de constructions
-de ce genre, consultez L<perlop/"Les détails sordides de l'interprétation des
+Sachez que si vous placez une barre oblique inversée directement (pas
+celles qui sont dans des variables interpolées) entre C<\Q> et C<\E>,
+la double interpolation peut vous amener des résultats très
+étonnants. Si vous avez I<besoin> de constructions de ce genre,
+consultez L<perlop/"Les détails sordides de l'interprétation des
 chaînes">
 
 =head2 Motifs étendus
 
-Perl définit une syntaxe logique d'extension des expressions rationnelles pour
-ajouter les fonctionnalités inexistantes dans les outils standard comme B<awk>
-et B<lex>..  La syntaxe est une paire de parenthèses avec un point
-d'interrogation comme premier caractère entre les parenthèses. Le caractère
-qui suit le point d'interrogation précise la fonction de l'extension.
+Perl intègre une extension de la syntaxe des expressions rationnelles
+afin d'ajouter les fonctionnalités inexistantes dans les outils
+standard tels que B<awk> et B<lex>.  La syntaxe est une paire de
+parenthèses avec un point d'interrogation comme premier caractère
+entre les parenthèses. Le caractère qui suit le point d'interrogation
+précise l'extension choisie.
 
-La stabilité de ces extensions varient énormément. Certaine font partie du
-langage depuis de longues années. D'autres sont encore expérimentales et
-peuvent changer sans avertissement ou même être retirées
-complètement. Vérifier le documentation de chacune de ces extensions pour
-connaître leur état.
+La stabilité de ces extensions est très variable. Certaine font partie
+du langage depuis de longues années. D'autres sont encore
+expérimentales et peuvent changer sans préavis ou même être retirées
+complètement. Vérifier le documentation de chacune de ces extensions
+pour connaître leur état.
 
-Le point d'interrogation a été choisi pour les extensions ainsi que pour les
-modificateurs non gourmands parce que 1) les points d'interrogation sont rares
-dans les vieilles expressions rationnelles et 2) pour qu'à chaque fois que
-vous en voyez un, vous vous arrêtiez pour vous "interroger" sur son
-comportement. C'est psychologique...
+Le point d'interrogation a été choisi pour les extensions ainsi que
+pour les modificateurs non gourmands parce que 1) les points
+d'interrogation sont rares dans les vieilles expressions rationnelles
+et 2) pour qu'à chaque fois que vous en voyez un, vous vous arrêtiez
+pour vous "interroger" sur son comportement. C'est psychologique...
 
 =over 10
 
 =item C<(?#texte)>
 
-Un commentaire. Le texte est ignoré. Si le modificateur C</x> est utilisé pour
-autoriser la mise en forme avec des blancs, un simple C<#> devrait
-suffire. Notez que Perl termine le commentaire aussitôt qu'il rencontre
-C<)>. Il n'y a donc aucun moyen de mettre le caractère C<)> dans ce
-commentaire.
+Un commentaire. Le texte est ignoré. Si le modificateur C</x> est
+utilisé pour autoriser la mise en forme avec des blancs, un simple
+C<#> devrait suffire. Notez que Perl termine le commentaire dès qu'il
+rencontre C<)>. Il n'y a donc aucun moyen de mettre le caractère C<)>
+dans ce commentaire.
 
 =item C<(?imsx-imsx)>
 
-Un ou plusieurs modificateurs de motifs intégrés. C'est particulièrement
-pratique pour les motifs dynamiques tels ceux lus depuis un fichier de
-configuration, ceux provenant d'un argument ou ceux qui sont spécifiés dans
-une table quelque part. Certains devront être sensibles à la casse, d'autres
-non. Dans le cas où un motif ne doit pas être sensible à la casse, il est
-possible d'inclure C<(?i>) au début du motif. Par S<exemple :>
+Un ou plusieurs modificateurs de motifs à activer (ou à désactiver
+s'ils sont précédés par C<->) jusqu'à la fin du motif ou du sout-motif
+courant. C'est très pratique pour les motifs dynamiques tels ceux lus
+depuis un fichier de configuration, ceux provenant d'un argument ou
+ceux qui sont spécifiés dans une table quelque part. Certains devront
+être sensibles à la casse, d'autres non. Dans le cas où un motif ne
+doit pas être sensible à la casse, il est possible d'inclure C<(?i>)
+au début du motif. Par S<exemple :>
 
     $pattern = "foobar";
     if ( /$pattern/i ) { } 
@@ -473,8 +567,8 @@ possible d'inclure C<(?i>) au début du motif. Par S<exemple :>
     $pattern = "(?i)foobar";
     if ( /$pattern/ ) { } 
 
-Les lettres après le C<-> désactive les modificateurs correspondants. Ces
-modificateurs sont locaux au groupe englobant (si il existe). Par S<exemple :>
+Ces modificateurs sont locaux au groupe englobant (si il existe). Par
+S<exemple :>
 
     ( (?i) blah ) \s+ \1
 
@@ -503,7 +597,7 @@ L<C<(?imsx-imsx)>>.  Par S<exemple :>
 
     /(?s-i:more.*than).*million/i
 
-est équivalent à 
+est équivalent à l'expression plus verbeuse
 
     /(?:(?s-i)more.*than).*million/i
 
@@ -553,13 +647,29 @@ longueur fixe.
 S<B<ATTENTION> :> cette extension est considérée comme expérimentale. Elle
 peut évoluer voir même disparaître sans préavis.
 
-Une assertion de longueur nulle permettant l'évaluation de code Perl. Elle est
-reconnue dans tous les cas. Actuellement les règles pour déterminer où le
+Une assertion de longueur nulle permettant l'évaluation de code
+Perl. Elle est reconnue dans tous les cas et le C<code> n'est pas
+soumis à interpolation. Actuellement les règles pour déterminer où le
 C<code> se termine sont quelque peu compliquées.
 
-Le C<code> a une portée correcte dans le sens où, si il y a un retour arrière
-sur l'assertion (voir L<"Retour arrière">), tous les changements introduits
-après la C<local>isation sont annulés. S<Donc :>
+Cette fonctionnalité, utilisée conjointement avec la variable spéciale
+C<$^N>, permet de mémoriser dans des variables les résultats des
+sous-groupes reconnues sans se préoccuper du nombre de parenthèses
+imbriquées. Par S<exemple :>
+
+   $_ = "The brown fox jumps over the lazy dog";
+   /the (\S+)(?{ $color = $^N }) (\S+)(?{ $animal = $^N })/i;
+   print "color = $color, animal = $animal\n";
+
+À l'intérieur du bloc C<(?{...})>, C<$_> fait référence à la chaîne
+sur laquelle s'applique l'expression rationnelle. Vous pouvez aussi
+utiliser C<pos()> pour connaître la position actuelle dans cette
+chaîne.
+
+Le C<code> a une portée correcte dans le sens où, si il y a un retour
+arrière sur l'assertion (voir L<"Retour arrière">), tous les
+changements introduits après la C<local>isation sont annulés. S<Donc
+:>
 
   $_ = 'a' x 8;
   m< 
@@ -576,42 +686,43 @@ après la C<local>isation sont annulés. S<Donc :>
                                    # variable non local-isee.
    >x;
 
-produit C<$res = 4>. Remarquez qu'après la reconnaissance, $cnt revient à la
-valeur 0 affectée globalement puisque nous ne sommes plus dans la portée du
-bloc où l'appel à C<local> est effectué.
+produit C<$res = 4>. Remarquez qu'après la reconnaissance, $cnt
+revient à la valeur 0 affectée globalement puisque nous ne sommes plus
+dans la portée du bloc où l'appel à C<local> est effectué.
 
 Cette assertion peut être utilisée comme sélecteur:
-C<(?(condition)motif-oui|motif-non)>. Si elle n'est I<pas> utilisée comme
-cela, le résultat de l'évaluation du C<code> est affecté à la variable
-$^R. L'affectation est immédiate donc $^R peut-être utilisé à partir d'une
-autre assertion de type C<(?{ code })> à l'intérieur de la même expression
-rationnelle.
+C<(?(condition)motif-oui|motif-non)>. Si elle n'est I<pas> utilisée
+comme cela, le résultat de l'évaluation du C<code> est affecté à la
+variable spéciale C<$^R>. L'affectation est immédiate donc C<$^R> peut
+être utilisée dans une autre assertion de type C<(?{ code })> à
+l'intérieur de la même expression rationnelle.
 
-L'affectation à $^R est correctement localisée, par conséquent l'ancienne
-valeur de $^R est restaurée en cas de retour arrière (voir
+L'affectation à $^R est correctement localisée, par conséquent
+l'ancienne valeur de $^R est restaurée en cas de retour arrière (voir
 L<"Retour arrière">).
 
-Pour des raisons de sécurité, cette construction n'est pas autorisée si
-l'expression rationnelle nécessite une interpolation de variables lors de
-l'exécution sauf si vous utilisez le directive C<use re 'eval'> (voir L<re>)
-ou si la variable contient le résultat de l'opérateur qr() (voir
-L<perlop/"qr/STRING/imosx">).
+Pour des raisons de sécurité, cette construction n'est pas autorisée
+si l'expression rationnelle nécessite une interpolation de variables
+lors de l'exécution sauf si vous utilisez le directive C<use re
+'eval'> (voir L<re>) ou si la variable contient le résultat de
+l'opérateur qr() (voir L<perlop/"qr/STRING/imosx">).
 
-Cette restriction est due à l'usage très courant et remarquablement pratique
-de motifs déterminés lors de l'exécution. Par S<exemple :>
+Cette restriction est due à l'usage très courant et remarquablement
+pratique de motifs déterminés lors de l'exécution. Par S<exemple :>
 
     $re = <>;
     chomp $re;
     $string =~ /$re/;
 
-Avant que Perl sache comment exécuter du code interpolé à l'intérieur d'un
-motif, cette opération était complètement sûre d'un point de vue sécurité bien
-qu'elle puisse générer une exception si le motif n'est pas légal. Par contre,
-si vous activez la directive C<use re 'eval'>, cette construction n'est plus
-du tout sûre. Vous ne devriez donc le faire que lorsque vous utilisez la
-vérification des données (via taint et l'option C<-T>). Mieux encore, vous
-pouvez utiliser une évaluation contrainte via le module Safe. Voir L<perlsec>
-pour les détails à propos de ces mécanismes.
+Avant que Perl sache comment exécuter du code interpolé à l'intérieur
+d'un motif, cette opération était complètement sûre d'un point de vue
+sécurité bien qu'elle puisse générer une exception si le motif n'est
+pas légal. Par contre, si vous activez la directive C<use re 'eval'>,
+cette construction n'est plus du tout sûre. Vous ne devriez donc le
+faire que lorsque vous utilisez la vérification des données (via taint
+et l'option C<-T>). Mieux encore, vous pouvez utiliser une évaluation
+contrainte dans un compartiement Safe. Voir L<perlsec> pour les
+détails à propos de ces mécanismes.
 
 =item C<(??{ code })>
 
@@ -640,18 +751,19 @@ La motif suivant reconnaît des groupes S<parenthésés :>
              \)
           }x;
 
-=item C<(?E<gt>motif)>
+=item C<< (?>motif) >>
 
 S<B<ATTENTION> :> cette extension est considérée comme expérimentale. Elle
 peut évoluer voir même disparaître sans préavis.
 
-Une sous-expression "indépendante".  Reconnaît B<uniquement> la sous-chaîne
-qui aurait été reconnue si la sous-expression avait été seule et ancrée au
-même endroit. C'est pratique, par exemple pour optimiser certaines
-constructions qui risqueraient sinon d'être "éternelles", car cette
-construction n'effectue aucun retour arrière (voir L<"Retour arrière">). C'est
-aussi pratique là où on a besoin de la sémantique "prend tout ce que tu peux
-sans jamais redonner quoique ce soit".
+Une sous-expression "indépendante".  Reconnaît B<uniquement> la
+sous-chaîne qui aurait été reconnue si la sous-expression avait été
+seule et ancrée au même endroit. C'est pratique, par exemple pour
+optimiser certaines constructions qui risqueraient sinon d'être
+"éternelles", car cette construction n'effectue aucun retour arrière
+(voir L<"Retour arrière">). C'est aussi pratique lorsqu'on souhaite le
+comportement "prend tout ce que tu peux sans jamais redonner quoique
+ce soit".
 
 Par S<exemple :> C<^(?E<gt>a*)ab> ne pourra jamais être reconnu puisque
 C<(?E<gt>a*)> (ancré au début de la chaîne) reconnaîtra I<tous> les caractères
@@ -662,12 +774,13 @@ reconnaissance du sous-groupe C<a*> est influencé par le groupe suivant C<ab>
 de caractères que C<a*> seul puisque cela permet à la suite d'être reconnue.
 
 Un effet similaire à C<(?E<gt>motif)> peut être obtenu en écrivant
-C<(?=(motif))\1>. La recherche est effectuée dans un contexte I<"logique"> et
-reconnaît donc la même sous-chaîne qu'une expression C<a+> seule. Le C<\1>
-mange la chaîne reconnue et transforme donc l'assertion de longueur nulle en
-une expression analogue à C<(?E<gt>...)>. (La seule différence est que la
-dernière utilise un groupe mémorisé et décale donc le numéro des références
-arrières dans le reste de l'expression rationnelle.)
+C<(?=(motif))\1>. La première partie de l'expression reconnaît la même
+sous-chaîne qu'une expression C<a+> seule et ensuite le C<\1> mange la
+chaîne reconnue et transforme donc l'assertion de longueur nulle en
+une expression analogue à C<(?E<gt>...)>. (La seule différence entre
+ces deux expressions est que la dernière utilise un groupe mémorisé et
+décale donc le numéro des références arrières dans le reste de
+l'expression rationnelle.)
 
 Supposons le motif S<suivant :>
 
@@ -701,26 +814,29 @@ S<modifié :>
        \) 
      }x
 
-pour utiliser C<(?E<gt>...)>, reconnaît exactement la même chose (un bon
-exercice serait de la vérifier vous-même) mais se termine en 4 fois moins de
-temps sur une chaîne similaire contenant 1000000 C<a>.  Attention, ce motif
-produit actuellement un message d'avertissement avec B<-w> disant C<"matches
-the null string many times"> (C<"reconnaît la chaîne de longueur nulle très
-souvent">).
+en utilisant C<(?E<gt>...)>, reconnaît exactement la même chose (un
+bon exercice serait de le vérifier vous-même) mais se termine en 4
+fois moins de temps sur une chaîne similaire contenant 1000000 C<a>.
+Attention, ce motif produit actuellement un message d'avertissement
+avec B<-w> disant C<"matches null string many times in regexp">
+(C<"reconnaît la chaîne de longueur nulle très souvent dans une
+regexp">).
 
 Dans des motifs simples comme C<(?E<gt> [^()]+ )>, un effet comparable peut
 être observé en utilisant le test d'absence en avant comme dans C<[^()]+ (?!
 [^()] )>.  Ce n'est que 4 fois plus lent sur une chaîne contenant 1000000
 C<a>.
 
-La sémantique "prend tout ce que tu peux sans jamais redonner quoique ce soit"
-est utile dans de nombreuses situations où une première analyse laisse à
-penser qu'un simple motif C<()*> suffit. Supposez que vous voulez analyser un
-texte avec des commentaires délimités par C<#> suivi d'éventuels espaces
-(horizontaux). Contrairement aux apparences, C<#[ \t]*> n'est I<pas> le
-sous-motif correct pour reconnaître le délimiteur de commentaires parce qu'il
-peut laisser échapper quelques espaces si la suite du motif en a besoin pour
-être reconnue. Le réponse correcte est l'une de celles qui S<suivent :>
+La comportement "prend tout ce que tu peux sans jamais redonner
+quoique ce soit" est utile dans de nombreuses situations où une
+première analyse laisse à penser qu'un simple motif C<()*>
+suffit. Supposez que vous voulez analyser un texte avec des
+commentaires délimités par C<#> suivi d'éventuels espaces
+(horizontaux). Contrairement aux apparences, C<#[ \t]*> n'est I<pas>
+le sous-motif correct pour reconnaître le délimiteur de commentaires
+parce qu'il peut laisser échapper quelques espaces si la suite du
+motif en a besoin pour être reconnue. Le réponse correcte est l'une de
+celles qui S<suivent :>
 
     (?>#[ \t]*)
     #[ \t]*(?![ \t])
@@ -786,18 +902,19 @@ mot qui suit "foo" dans la chaîne "Food is on the foo table.":
         print "$2 suit $1.\n";
     }
 
-Lors de la reconnaissance, la première partie de l'expression rationnelle 
-(C<\b(foo)>) trouve un point d'ancrage dès le début de la chaîne et stocke 
-"Foo" dans $1.  Puis le moteur de reconnaissance s'aperçoit qu'il n'y pas 
-de caractère d'espacement après le "Foo" qu'il a stocké dans $1 et, 
-reconnaissant son erreur, il recommence alors un caractère plus loin que 
-cette première tentative.  Cette fois, il va jusqu'à la prochaine 
-occurrence de "foo", l'ensemble de l'expression rationnelle est reconnue et 
-vous obtenez comme prévu "table suit foo."
+Lors de la reconnaissance, la première partie de l'expression
+rationnelle (C<\b(foo)>) trouve un point d'ancrage dès le début de la
+chaîne et stocke "Foo" dans $1.  Puis le moteur de reconnaissance
+s'aperçoit qu'il n'y pas de caractère d'espacement après le "Foo"
+qu'il a stocké dans $1 et, réalisant son erreur, il recommence alors
+un caractère plus loin que cette première tentative.  Cette fois, il
+va jusqu'à la prochaine occurrence de "foo", l'ensemble de
+l'expression rationnelle est reconnue et vous obtenez comme prévu
+"table suit foo."
 
-Parfois la reconnaissance minimale peut aider.  Imaginons que vous voulez 
-reconnaître tout ce qu'il y a entre "foo" et "bar".  Tout d'abord, vous 
-écrivez quelque chose S<comme :>
+Parfois la reconnaissance minimale peut aider.  Imaginons que vous
+souhaitez reconnaître tout ce qu'il y a entre "foo" et "bar".  Tout
+d'abord, vous écrivez quelque chose S<comme :>
 
     $_ =  "The food is under the bar in the barn.";
     if ( /foo(.*)bar/ ) {
@@ -864,27 +981,28 @@ qui S<affichera :>
     (.*)\b(\d+)$ <I have 2 numbers: > <53147>
     (.*\D)(\d+)$ <I have 2 numbers: > <53147>
 
-Comme vous pouvez le constater, c'est un peu délicat.  Il faut comprendre 
-qu'une expression rationnelle n'est qu'un ensemble d'assertions donnant une 
-définition du succès.  Il peut y avoir aucun, un ou de nombreux moyens de 
-répondre à cette définition lorsqu'on l'applique à une chaîne particulière.  
-Et lorsqu'il y a plusieurs moyens, vous devez comprendre le retour arrière 
-pour savoir quelle variété de succès vous obtiendrez.
+Comme vous pouvez le constater, c'est un peu délicat.  Il faut
+comprendre qu'une expression rationnelle n'est qu'un ensemble
+d'assertions donnant une définition du succès.  Il peut y avoir aucun,
+un ou de nombreux moyens de répondre à cette définition lorsqu'on
+l'applique à une chaîne particulière.  Et lorsqu'il y a plusieurs
+moyens, vous devez comprendre le retour arrière pour savoir quelle
+variété de succès vous obtiendrez.
 
-Avec l'utilisation des assertions de tests d'absence ou de présence, cela peut
-devenir carrément épineux.  Supposons que vous voulez retrouver une suite de
-caractères non numériques suivie par "123".  Vous pouvez essayer d'écrire
-quelque chose S<comme :>
+Avec l'utilisation des assertions de tests d'absence ou de présence,
+cela peut devenir carrément épineux.  Supposons que vous souhaitez
+retrouver une suite de caractères non numériques suivie par "123".
+Vous pouvez essayer d'écrire quelque chose S<comme :>
 
     $_ = "ABC123";
     if ( /^\D*(?!123)/ ) {              # Rate!
         print "Heu, pas de 123 dans $_\n";
     }
 
-Mais ça ne fonctionne pas...  tout du moins pas comme vous l'espériez.  Ça
-affiche qu'il n'y a pas de 123 à la fin de la chaîne.  Voici une présentation
-claire de ce que ces motifs reconnaissent contrairement à ce qu'on pourrait
-S<attendre :>
+Mais ça ne fonctionne pas...  tout du moins pas comme vous l'espériez.
+Ça affiche qu'il n'y a pas de 123 à la fin de la chaîne.  Voici une
+présentation claire de ce qui est reconnu par ces motifs contrairement
+à ce qu'on pourrait S<attendre :>
 
     $x = 'ABC123' ;
     $y = 'ABC445' ;
@@ -902,11 +1020,12 @@ S<Affiche :>
     4: got ABC
 
 On aurait pu croire que le test 3 échouerait puisqu'il semble être une
-généralisation du test 1.  La différence importante entre les deux est que le
-test 3 contient un quantificateur (C<\D*>) et peut donc effectuer des retours
-arrière alors que le test 1 ne le peut pas.  En fait, ce que demande le test 3
-c'est "existe-t-il au début de $x quelque chose qui n'est pas 123 et qui suit
-0 ou plusieurs caractères autres que des chiffres ?".  Si on laisse C<\D*>
+généralisation du test 1.  La différence importante entre les deux est
+que le test 3 contient un quantificateur (C<\D*>) et peut donc
+effectuer des retours arrière alors que le test 1 ne le peut pas.  En
+fait, ce que demande le test 3 c'est "en partant du début de $x,
+peut-on trouver quelque chose qui n'est pas 123 précédé par 0 ou
+plusieurs caractères autres que des chiffres ?".  Si on laisse C<\D*>
 reconnaître "ABC", cela entraîne l'échec du motif complet.
 
 Le moteur de reconnaissance met tout d'abord en correspondance C<\D*> avec
@@ -916,10 +1035,10 @@ dans l'expression rationnelle, le moteur de reconnaissance peut faire des
 retours arrière pour tenter une reconnaissance différente afin de reconnaître
 l'ensemble de l'expression rationnelle.
 
-Le motif veut I<vraiment> être reconnu, alors il utilise le mécanisme de 
-retour arrière et limite cette fois l'expansion de C<\D*> juste à "AB".  
-Maintenant, il y a réellement quelque chose qui suit "AB" et qui n'est pas 
-"123.  C'est "C123" qui est suffisant pour réussir.
+Le motif veut I<vraiment> être reconnu, alors il utilise le mécanisme
+de retour arrière et limite cette fois l'expansion de C<\D*> juste à
+"AB".  Maintenant, il y a réellement quelque chose qui suit "AB" et
+qui n'est pas "123 : c'est "C123". C'est suffisant pour réussir.
 
 On peut faire la même chose en mixant l'utilisation des assertions de présence
 et d'absence.  Nous dirons alors que la première partie doit être suivie par
@@ -934,116 +1053,126 @@ résultat attendu.  C'est à dire que le test 5 échouera et le 6 S<marchera :>
 
     6: got ABC
 
-En d'autres termes, cela signifie que les deux assertions de longueur nulle
-consécutives doivent être vraies toutes les deux ensembles, exactement comme
-quand vous utilisez des assertions prédéfinies: C</^$/> est reconnue
-uniquement si vous êtes simultanément au début ET à la fin de la ligne.  La
-réalité sous-jacente est que la juxtaposition de deux expressions rationnelles
-signifie toujours un ET sauf si vous écrivez explicitement un OU en utilisant
-la barre verticale.  C</ab/> signifie reconnaître "a" ET (puis) reconnaître
+En d'autres termes, cela signifie que les deux assertions de longueur
+nulle consécutives doivent être vraies toutes les deux ensembles,
+exactement comme quand vous utilisez des assertions S<prédéfinies :>
+C</^$/> est reconnue uniquement si vous êtes simultanément au début ET
+à la fin de la ligne.  La réalité sous-jacente est que la
+juxtaposition de deux expressions rationnelles signifie toujours un ET
+sauf si vous écrivez explicitement un OU en utilisant la barre
+verticale.  C</ab/> signifie reconnaître "a" ET (puis) reconnaître
 "b", même si les tentatives de reconnaissance n'ont pas lieu à la même
-position puisque "a" n'est pas une assertion de longueur nulle (mais de
-longueur un).
+position puisque "a" n'est pas une assertion de longueur nulle (mais
+de longueur un).
 
-S<B<Avertissement> :> certaines expressions rationnelles compliquées peuvent
-prendre un temps exponentiel pour leur résolution à cause du grand nombre de
-retours arrière effectués pour essayer d'être reconnue.  Par exemple, sans les
-optimisations internes du moteur d'expressions rationnelles, l'expression
-suivante calculerait très S<longtemps :>
+S<B<Avertissement> :> certaines expressions rationnelles compliquées
+peuvent prendre un temps exponentiel pour leur résolution à cause du
+grand nombre de retours arrières effectués pour essayer d'être
+reconnue.  Par exemple, sans les optimisations internes du moteur
+d'expressions rationnelles, l'expression suivante calculerait très
+S<longtemps :>
 
    'aaaaaaaaaaaa' =~ /((a{0,5}){0,5})*[c]/
 
-et si vous utilisiez des C<*> au lieu de limiter entre 0 et 5 reconnaissances,
-elle pourrait alors prendre littéralement un temps infini -- ou plutôt
-jusqu'au dépassement de la capacité de la pile. De plus, ces optimisations ne
-sont pas toujours applicables. Par exemple, en remplaçant C<{0,5}> par C<*>
-dans le groupe externe, plus aucune optimisation n'a lieu et le calcul devient
-extrêmement long.
+et si vous utilisiez des C<*> au lieu de limiter entre 0 et 5
+reconnaissances, elle pourrait alors prendre littéralement un temps
+infini -- ou plutôt jusqu'au dépassement de la capacité de la pile. De
+plus, ces optimisations ne sont pas toujours applicables. Par exemple,
+en remplaçant C<{0,5}> par C<*> dans le groupe externe, plus aucune
+optimisation n'a lieu et le calcul devient extrêmement long.
 
-Un outil puissant pour optimiser ce genre de choses est les groupes
-"indépendants" qui n'effectuent pas de retour arrière (voir
-L<C<(?E<gt>motif)>>).  Remarquez aussi que les assertions de longueur nulle
-n'effectuent pas de retour arrière puisqu'elles sont considérées dans un
-contexte S<"logique" :> seul importe qu'elles soient reconnaissables ou non.
-Pour un exemple de l'influence éventuelle sur la reconnaissance voir
-L<C<(?E<gt>motif)>>.
+Un outil puissant pour optimiser ce genre de choses est ce qu'on
+appelle les "groupes indépendants" qui n'effectuent pas de retour
+arrière (voir L<C<(?E<gt>motif)>>).  Remarquez aussi que les
+assertions de longueur nulle n'effectuent pas de retour arrière
+puisqu'elles sont considérées dans un contexte S<"logique" :> seul
+importe qu'elles soient reconnaissables ou non.  Pour un exemple de
+l'influence éventuelle sur la reconnaissance voir L<C<(?E<gt>motif)>>.
 
-=head2 Version 8 des expressions rationnelles
+=head2 Version 8 des expressions rationnelles X<expression rationnelle, version 8> X<regex, version 8> X<regexp, version 8>
 
-Si vous n'êtes pas familier avec la version 8 des expressions rationnelles,
-vous trouverez ici les règles de reconnaissance de motifs qui n'ont pas été
-décrites plus haut.
+Si vous n'êtes pas familier avec la version 8 des expressions
+rationnelles, vous trouverez ici les règles de reconnaissance de
+motifs qui n'ont pas été décrites plus haut.
 
-Un caractère se reconnaît lui-même sauf si c'est un méta-caractère avec un
-sens spécial décrit ici ou précédemment. Pour interpréter un méta-caractère
-littéralement, il faut le préfixer par un "\" (e.g., "\." reconnaît un "." au
-lieu de n'importe quel caractère, "\\" reconnaît "\"). Une suite de caractères
-reconnaît cette suite de caractères dans la chaîne à analyser. Le motif
-C<blurfl> reconnaîtra donc "blurfl" dans la chaîne à analyser.
+Un caractère se reconnaît lui-même sauf si c'est un I<méta-caractère>
+avec un sens spécial décrit ici ou précédemment. Pour interpréter un
+méta-caractère littéralement, il faut le préfixer par un "\" (c.-à-d.,
+"\." reconnaît un "." au lieu de n'importe quel caractère, "\\"
+reconnaît "\"). Une suite de caractères reconnaît cette suite de
+caractères dans la chaîne à analyser. Le motif C<blurfl> reconnaîtra
+donc "blurfl" dans la chaîne à analyser.
 
-Vous pouvez spécifier une classe de caractères en entourant une liste de
-caractères entre C<[]>. Cette classe reconnaîtra l'un des caractères de la
-liste. Si le premier caractère après le "[" est "^", la classe reconnaîtra un
-caractère qui n'est pas dans la liste. À l'intérieur d'une liste, la caractère
-"-" sert à décrire un intervalle. Par exemple C<a-z> représente tous les
-caractères entre "a" et "z" inclus. Si vous voulez inclure dans la classe le
-caractère "-" ou "]" lui-même, mettez le au début de la classe (après un
+Vous pouvez spécifier une classe de caractères en entourant une liste
+de caractères entre C<[]>. Cette classe reconnaîtra l'un des
+caractères de la liste. Si le premier caractère après le "[" est "^",
+la classe reconnaîtra un caractère qui n'est pas dans la liste. À
+l'intérieur d'une liste, la caractère "-" sert à décrire un
+intervalle. Par exemple C<a-z> représente tous les caractères entre
+"a" et "z" inclus. Si vous voulez inclure dans la classe le caractère
+"-" ou "]" lui-même, mettez le au début de la classe (après un
 éventuel "^") ou préfixez le par un "\". "-" est aussi interprété
-littéralement si il est placé en fin de classe, juste avant le "]". (Les
-exemples suivants décrivent tous la même classe de trois caractères: C<[-az]>,
-C<[az-]>, C<[a\-z]>. Ils sont tous différents de C<[a-z]> qui décrit une
-classe contenant 26 caractères.) Notez que si vous essayez d'utiliser C<\w>,
-C<\W>, C<\s>, C<\S>, C<\d> ou C<\D> comme borne d'un intervalle, ce ne sera
-pas un intervalle et le "-" sera interprété littéralement.
+littéralement si il est placé en fin de classe, juste avant le
+"]". (Les exemples suivants décrivent tous la même classe de trois
+caractères: C<[-az]>, C<[az-]>, C<[a\-z]>. Ils sont tous différents de
+C<[a-z]> qui décrit une classe contenant 26 caractères.) Notez aussi
+que si vous essayez d'utiliser C<\w>, C<\W>, C<\s>, C<\S>, C<\d> ou
+C<\D> comme borne d'un intervalle, ce ne sera pas un intervalle et le
+"-" sera interprété littéralement.
 
-Remarquez aussi que le concept de classe de caractères n'est pas vraiment
-portable entre différents codages -- et même dans un même codage, cela peut
-produire un résultat que vous n'attendez pas. Un bon principe de base est de
-n'utiliser que des intervalles qui commencent et se terminent dans le même
-alphabet ([a-e], [A-E]) ou dans les chiffres ([0-9]). Tout le reste n'est pas
-sûr. Dans le doute, énumérez l'ensemble des caractères explicitement.
+Remarquez aussi que le concept d'intervalle de caractères n'est pas
+vraiment portable entre différents codages -- et même dans un même
+codage, cela peut produire un résultat que vous n'attendez pas. Un bon
+principe de base est de n'utiliser que des intervalles qui commencent
+et se terminent dans le même alphabet ([a-e], [A-E]) ou dans les
+chiffres ([0-9]). Tout le reste n'est pas sûr. Dans le doute, énumérez
+l'ensemble des caractères explicitement.
 
-Certains caractères peuvent être spécifiés avec la syntaxe des méta-caractères
-comme en S<C :> "\n" reconnaît le caractère nouvelle ligne, "\t" reconnaît une
-tabulation, "\r" reconnaît un retour chariot, "\f" reconnaît un changement de
-page, etc. Plus généralement, \I<nnn>, où I<nnn> est une suite de chiffres en
-octaux, reconnaît le caractère dont le code ASCII est I<nnn>. De même,
-\xI<nn>, où I<nn> est une suite de chiffres hexadécimaux, reconnaît le
-caractère dont le code ASCII est I<nn>. L'expression \cI<x> reconnaît le
-caractère ASCII control-I<x>. Pour terminer, le méta-caractère "." reconnaît
-n'importe quel caractère sauf "\n" (à moins d'utiliser C</s>).
+Certains caractères peuvent être spécifiés avec la syntaxe des
+méta-caractères comme en S<C :> "\n" reconnaît le caractère nouvelle
+ligne, "\t" reconnaît une tabulation, "\r" reconnaît un retour
+chariot, "\f" reconnaît un changement de page, etc. Plus généralement,
+\I<nnn>, où I<nnn> est une suite de chiffres octaux, reconnaît le
+caractère dont le code ASCII est I<nnn>. De même, \xI<nn>, où I<nn>
+est une suite de chiffres hexadécimaux, reconnaît le caractère dont le
+code ASCII est I<nn>. L'expression \cI<x> reconnaît le caractère ASCII
+control-I<x>. Pour terminer, le méta-caractère "." reconnaît n'importe
+quel caractère sauf "\n" (à moins d'utiliser C</s>).
 
-Vous pouvez décrire une série de choix dans un motif en les séparant par des
-"|". Donc C<fee|fie|foe> reconnaîtra n'importe quel "fee", "fie" ou "foe" dans
-la chaîne à analyser (comme le ferait C<f(e|i|o)e>). Le premier choix inclut
-tout ce qui suit le précédent délimiteur de motif ("(", "[" ou le début du
-motif) jusqu'au premier "|" et le dernier choix inclut tout ce qui suit le
-dernier "|" jusqu'au prochain délimiteur de motif. C'est pour cette raison
-qu'il est courant d'entourer les choix entre parenthèses pour minimiser les
+Vous pouvez décrire une série de choix dans un motif en les séparant
+par des "|". Donc C<fee|fie|foe> reconnaîtra n'importe quel "fee",
+"fie" ou "foe" dans la chaîne à analyser (comme le ferait
+C<f(e|i|o)e>). Le premier choix inclut tout ce qui suit le précédent
+délimiteur de motif ("(", "[" ou le début du motif) jusqu'au premier
+"|" et le dernier choix inclut tout ce qui suit le dernier "|"
+jusqu'au prochain délimiteur de motif. C'est pour cette raison qu'il
+est courant d'entourer les choix entre parenthèses pour minimiser les
 risques de mauvaises interprétation de début et de fin.
 
-Les différents choix sont essayés de la gauche vers la droite et le premier
-choix qui autorise la reconnaissance de l'ensemble du motif est retenu. Ce qui
-signifie que les choix ne sont pas obligatoirement "gourmand". Par exemple: en
-appliquant C<foo|foot> à "barefoot", seule la partie "foo" est reconnue
-puisque c'est le premier choix essayé et qu'il permet la reconnaissance du
-motif complet. (Cela peu sembler anodin mais ne l'est pas lorsque vous
-mémorisez du texte grâce aux parenthèses.)
+Les différents choix sont essayés de la gauche vers la droite et le
+premier choix qui autorise la reconnaissance de l'ensemble du motif
+est retenu. Ce qui signifie que les choix ne sont pas obligatoirement
+"gourmand". Par exemple: en appliquant C<foo|foot> à "barefoot", seule
+la partie "foo" est reconnue puisque c'est le premier choix essayé et
+qu'il permet la reconnaissance du motif complet. (Cela peu sembler
+anodin mais ne l'est pas lorsque vous mémorisez du texte grâce aux
+parenthèses.)
 
-Souvenez-vous aussi que "|" est interprété littéralement lorsqu'il est présent
-dans une classe de caractères. Donc si vous écrivez C<[fee|fie|foe]>, vous
-recherchez en fait C<[feio|]>.
+Souvenez-vous aussi que "|" est interprété littéralement lorsqu'il est
+présent dans une classe de caractères. Donc si vous écrivez
+C<[fee|fie|foe]>, vous recherchez en fait C<[feio|]>.
 
-À l'intérieur d'un motif, vous pouvez mémoriser ce que reconnaît un sous-motif
-en l'entourant de parenthèses. Plus loin dans le motif, vous pouvez faire
-référence au I<n>-ieme sous-motif mémorisé en utilisant le méta-caractère
-\I<n>. Les sous-motifs sont numérotés de droite à gauche dans l'ordre de leurs
-parenthèses ouvrantes. Une référence reconnaît exactement la chaîne
-actuellement reconnue par le sous-motif correspondant et non pas n'importe
-quelle chaîne qu'il aurait pu reconnaître. Par conséquent, C<(0|0x)\d*\s\1\d*>
-reconnaîtra "0x1234 0x4321" mais pas "0x1234 01234" car, même si C<(0|0x)>
-peut reconnaître le 0 dans le second nombre, ce sous-motif reconnaît dans ce
-cas "0x".
+À l'intérieur d'un motif, vous pouvez mémoriser ce que reconnaît un
+sous-motif en l'entourant de parenthèses. Plus loin dans le motif,
+vous pouvez faire référence au I<n>-ième sous-motif mémorisé en
+utilisant le méta-caractère \I<n>. Les sous-motifs sont numérotés de
+droite à gauche dans l'ordre de leurs parenthèses ouvrantes. Une
+référence reconnaît exactement la chaîne actuellement reconnue par le
+sous-motif correspondant et non pas n'importe quelle chaîne qu'il
+aurait pu reconnaître. Par conséquent, C<(0|0x)\d*\s\1\d*> reconnaîtra
+"0x1234 0x4321" mais pas "0x1234 01234" car, même si C<(0|0x)> peut
+reconnaître le 0 dans le second nombre, ce sous-motif reconnaît dans
+ce cas "0x".
 
 =head2 AVERTISSEMENT concernant \1 et $1
 
@@ -1065,21 +1194,24 @@ ou si vous S<essayez :>
 
     s/(\d+)/\1000/;
 
-Vous ne pouvez lever l'ambiguïté en écrivant C<\{1}000> alors que c'est
-possible grâce à C<${1}000>. En fait, il ne faut pas confondre l'opération
-d'interpolation et l'opération de reconnaissance d'une référence. Elles ont
-certainement deux sens bien différents dans la partie I<gauche> de C<s///>.
+Vous ne pouvez lever l'ambiguïté en écrivant C<\{1}000> alors que
+c'est possible grâce à C<${1}000>. En fait, il ne faut pas confondre
+l'opération d'interpolation et l'opération de reconnaissance d'une
+référence. Ce sont deux choses bien différents dans la partie
+I<gauche> de C<s///>.
 
 =head2 Répétition de motifs de reconnaissance de longueur nulle
 
-AVERTISSEMENT: ce qui suit est difficile. Cette section doit être réécrite.
+AVERTISSEMENT: ce qui suit est difficile. Cette section nécessiterait
+une réécriture.
 
-Les expressions rationnelles fournissent un langage de programmation 
-laconique et puissant.  Comme avec la plupart des autres outils puissants, 
-ce pouvoir peut faire des ravages.
+Les expressions rationnelles fournissent un langage de programmation
+concis et puissant.  Comme avec la plupart des autres outils
+puissants, ce pouvoir peut faire des ravages.
 
-Un fréquent "abus de pouvoir" découle de la possibilité de créer des 
-boucles sans fin avec des expressions rationnelles aussi innocentes S<que :>
+Un "abus de pouvoir" fréquent découle de la possibilité de créer des
+boucles sans fin avec des expressions rationnelles aussi innocentes
+S<que :>
 
     'foo' =~ m{ ( o? )* }x;
 
@@ -1094,12 +1226,12 @@ ou
 
     print "match: <$&>\n" while 'foo' =~ m{ o? }xg;
 
-ou encore dans la boucle induite par split().
+ou encore dans la boucle implicte de split().
 
-Par contre, une longue expérience montre que de nombreuses tâches de
-programmation peuvent vraiment se simplifier grâce à la reconnaissance répétée
-de sous-expressions éventuellement de longueur nulle.  En voici un exemple
-simple:
+En revanche, on sait depuis longtemps que de nombreuses tâches de
+programmation peuvent vraiment se simplifier grâce à la reconnaissance
+répétée de sous-expressions éventuellement de longueur nulle.  En
+voici un exemple simple:
 
     @chars = split //, $string;           # // n'est pas magique pour split
     ($whitewashed = $string) =~ s/()/ /g; # les parentheses supprime la magie de s// /
@@ -1112,21 +1244,22 @@ induites par exemples par C</g> ou par l'opérateur split().
 Les boucles de bas niveau sont interrompues lorsqu'on détecte la répétition 
 d'une expression reconnaissant une sous-chaîne de longueur nulle.  Donc
 
-   m{ (?: NON_ZERO_LENGTH | ZERO_LENGTH )* }x;
+   m{ (?: LONGUEUR_NON_NULLE| LONGUEUR_NULLE| )* }x;
 
 est en fait équivalent à 
 
-   m{   (?: NON_ZERO_LENGTH )* 
+   m{   (?: LONGUEUR_NON_NULLE| )* 
       | 
-        (?: ZERO_LENGTH )? 
+        (?: LONGUEUR_NULLE| )? 
     }x;
 
-Les boucles de haut niveau se souviennent entre les itérations que la 
-dernière chaîne reconnue était de longueur nulle.  Pour briser la boucle 
-infinie, une chaîne reconnue ne peut-être de longueur nulle si la précédente 
-l'était.  Cette interdiction interfère avec le retour arrière (voir 
-L<"Retour arrière">) et dans ce cas, la I<seconde meilleure> chaîne 
-est choisie si la I<meilleure> est de longueur nulle.
+Les boucles de haut niveau se souviennent entre les itérations que la
+dernière chaîne reconnue était de longueur nulle.  Pour briser la
+boucle infinie, une chaîne reconnue ne peut pas être de longueur nulle
+si elle l'était la fois précédente.  Cette interdiction interfère avec
+le retour arrière (voir L<"Retour arrière">) et dans ce cas, la
+I<seconde meilleure> chaîne est choisie si la I<meilleure> est de
+longueur nulle.
 
 Par S<exemple :>
 
@@ -1171,11 +1304,11 @@ meilleure qui est choisie. Cela remplace la question "Qu'est-ce qui est
 S<choisi ?>" par la question "Quelle la meilleure reconnaissance et quelle est
 la S<pire ?>".
 
-Pour la plupart des morceaux élémentaires, la question ne se pose pas
-puisqu'au plus une sous-chaîne peut être reconnue à un emplacement
-donné. Cette section décrit la notion de meilleure/pire pour les opérateurs de
-combinaison. Dans les descriptions ci-dessous, C<S> et C<T> désignent des
-sous-expressions rationnelles.
+Pour la plupart des expressions élémentaires, la question ne se pose
+pas puisqu'au plus une sous-chaîne peut être reconnue à un emplacement
+donné. Cette section décrit la notion de meilleure/pire pour les
+opérateurs de combinaison. Dans les descriptions ci-dessous, C<S> et
+C<T> désignent des sous-expressions rationnelles.
 
 =over 4
 
@@ -1219,43 +1352,52 @@ respectivement.
 
 =item C<(?E<gt>S)>
 
-Reconnait la meilleure correspondance pour C<S> et uniquement celle-là.
+Reconnaît la meilleure correspondance pour C<S> et uniquement
+celle-là.
 
 =item C<(?=S)>, C<(?E<lt>=S)>
 
-Pour ces opérateurs, il n'est pas nécessaire de décrire l'ordre puisque seul
-importe de savoir que C<S> peut ou non être reconnu.
+Seul la meilleure correspondance pour C<S> ets utilisé. (Cela n'a
+d'importance que si C<S> est mémorisé et utilisé ensuite via une
+référence arrière)
+
+=item C<(?!S)>, C<(?<!S)>
+
+Pour ces constructions, il n'y a pas d'ordre à décrire puisque seul
+compte le fait que C<S> est ou non reconnu.
 
 =item C<(??{ EXPR })>
 
-L'ordre est le même que celui de l'expression rationnelle qui est le résultat
-de EXPR.
+L'ordre est le même que celui de l'expression rationnelle qui est le
+résultat de EXPR.
 
 =item C<(?(condition)motif-oui|motif-non)>
 
-Souvenez-vous que le choix du motif à reconnaître (entre C<motif-oui> et
-C<motif-non>) est déjà fait. L'ordre des reconnaissances est le même que celui
-du motif retenu.
+Souvenez-vous que le choix du motif à reconnaître (entre C<motif-oui>
+et C<motif-non>) est déjà fait. L'ordre des reconnaissances est le
+même que celui du motif retenu.
 
 =back
 
 Les principes précédents décrivent l'ordre des reconnaissances I<à une
-position donnée>. Une règle supplémentaire est nécessaire pour comprendre
-comment est déterminé la reconnaissance pour une expression rationnelle
-S<complète :> une reconnaissance à une position donnée est toujours meilleure
-qu'une reconnaissance à une position plus lointaine.
+position donnée>. Une règle supplémentaire est nécessaire pour
+comprendre comment est déterminée la reconnaissance pour une
+expression rationnelle S<complète :> une reconnaissance à une position
+donnée est toujours meilleure qu'une reconnaissance à une position
+plus lointaine.
 
 =head2 Création de moteurs RE spécifiques (customisés)
 
 La surcharge de constantes (voir L<overload>) est un moyen simple
-d'augmenter les fonctionnalités du moteur RE (le moteur de reconnaissance
-d'expressions rationnelles).
+d'augmenter les fonctionnalités du moteur RE (le moteur de
+reconnaissance d'expressions rationnelles).
 
-Imaginons que vous voulez définir une nouvelle séquence C<\Y|> qui peut être
-reconnue à la limite entre un espace et un autre caractère. Remarquez que
-C<(?=\S)(?E<lt>!\S)|(?!\S)(?E<lt>=\S)> reconnaît exactement ce qu'on veut mais
-nous voulons remplacer cette expression compliquée par C<\Y|>. Pour ce faire,
-nous pouvons créer un module S<C<customre> :>
+Imaginons que vous voulez définir une nouvelle séquence C<\Y|> qui
+peut être reconnue à la limite entre un espace et un autre
+caractère. Remarquez que C<(?=\S)(?E<lt>!\S)|(?!\S)(?E<lt>=\S)>
+reconnaît exactement ce qu'on veut mais nous voulons remplacer cette
+expression compliquée par C<\Y|>. Pour ce faire, nous pouvons créer un
+module S<C<customre> :>
 
     package customre;
     use overload;
@@ -1279,13 +1421,15 @@ nous pouvons créer un module S<C<customre> :>
       return $re;
     }
 
-Il vous suffit alors d'utiliser C<use customre> pour utiliser cette nouvelle
-séquence dans les expressions rationnelles constantes, i.e. celles qui ne
-nécessitent pas d'interpolation de variables lors de l'exécution. Tel que
-documenté dans L<overload>, cette conversion ne fonctionne que sur les parties
-littérales des expressions rationnelles. Dans C<\Y|$re\Y|>, la partie variable
-de cette expression rationnelle doit être convertie explicitement (mais
-uniquement si la signification spécifique de C<\Y|> est nécessaire dans $re):
+Il vous suffit alors d'utiliser C<use customre> pour utiliser cette
+nouvelle séquence dans les expressions rationnelles constantes,
+c.-à-d. celles qui ne nécessitent pas d'interpolation de variables
+lors de l'exécution. Telle que documentée dans L<overload>, cette
+conversion ne fonctionne que sur les parties littérales des
+expressions rationnelles. Dans C<\Y|$re\Y|>, la partie variable de
+cette expression rationnelle doit être convertie explicitement (mais
+uniquement si la signification spécifique de C<\Y|> est nécessaire
+dans $re)E<nbsp>:
 
     use customre;
     $re = <>;
@@ -1295,9 +1439,9 @@ uniquement si la signification spécifique de C<\Y|> est nécessaire dans $re):
 
 =head1 BUGS
 
-Le niveau de ce document varie de "difficile à comprendre" jusqu'à "totalement
-opaque". La prose divaguante et criblée de jargon est difficile à interpréter
-en divers endroits.
+Le niveau de difficuté de ce document varie de "difficile à
+comprendre" jusqu'à "totalement opaque". La prose divaguante et
+criblée de jargon est difficile à interpréter en divers endroits.
 
 =head1 VOIR AUSSI
 
@@ -1321,15 +1465,15 @@ Associates.
 =head2 Version
 
 Cette traduction française correspond à la version anglaise distribuée avec
-perl 5.6.1.  Pour en savoir plus concernant ces traductions, consultez
+perl 5.8.8.  Pour en savoir plus concernant ces traductions, consultez
 L<http://perl.enstimac.fr/>.
 
 =head2 Traducteur
 
-Traduction initiale et mise à jour 5.6.0 puis S<5.6.1 :> Paul Gaborit
-<Paul.Gaborit @ enstimac.fr>
+Traduction initiale et mise à jour 5.6.0, 5.6.1 et 5.8.8 par Paul
+Gaborit <Paul.Gaborit @ enstimac.fr>.
 
 =head2 Relecture
 
-Régis Julié <Regis.Julie@cetelem.fr>
+Régis Julié <Regis.Julie@cetelem.fr>.
 

@@ -221,7 +221,7 @@ listages complets, mais seulement des extraits.
 
 =over 4
 
-=item 1
+=item valeur 1
 
   entering main::BEGIN
    entering Config::BEGIN
@@ -237,7 +237,7 @@ listages complets, mais seulement des extraits.
    entering Config::FETCH
    entering Config::FETCH
 
-=item 2
+=item valeur 2
 
   entering main::BEGIN
    entering Config::BEGIN
@@ -259,7 +259,7 @@ listages complets, mais seulement des extraits.
    exited Config::FETCH
    entering Config::FETCH
 
-=item 4
+=item valeur 4
 
   in  $=main::BEGIN() from /dev/null:0
    in  $=Config::BEGIN() from lib/Config.pm:2
@@ -277,7 +277,7 @@ listages complets, mais seulement des extraits.
    in  $=Config::FETCH(ref(Config), 'osname') from lib/Config.pm:574
    in  $=Config::FETCH(ref(Config), 'osvers') from lib/Config.pm:574
 
-=item 6
+=item valeur 6
 
   in  $=main::BEGIN() from /dev/null:0
    in  $=Config::BEGIN() from lib/Config.pm:2
@@ -301,7 +301,7 @@ listages complets, mais seulement des extraits.
    out $=Config::FETCH(ref(Config), 'PERL_VERSION') from lib/Config.pm:574
    in  $=Config::FETCH(ref(Config), 'PERL_SUBVERSION') from lib/Config.pm:574
 
-=item 14
+=item valeur 14
 
   in  $=main::BEGIN() from /dev/null:0
    in  $=Config::BEGIN() from lib/Config.pm:2
@@ -322,7 +322,7 @@ listages complets, mais seulement des extraits.
    in  $=Config::FETCH('Config=HASH(0x1aa444)', 'baserev') from lib/Config.pm:574
    out $=Config::FETCH('Config=HASH(0x1aa444)', 'baserev') from lib/Config.pm:574
 
-=item 30
+=item valeur 30
 
   in  $=CODE(0x15eca4)() from /dev/null:0
    in  $=CODE(0x182528)() from lib/Config.pm:2

@@ -6,7 +6,7 @@ perlintro - Brève introduction et vue d'ensemble de Perl
 
 =head1 DESCRIPTION
 
-Ce document à pour but de donner une vue d'ensemble du langage de
+Ce document a pour but de donner une vue d'ensemble du langage de
 programmation Perl tout en fournissant quelques pointeurs vers de la
 documentation complémentaire. Il est conçu comme un guide de démarrage destiné
 à un public de novices. Il apporte juste assez d'informations pour permettre
@@ -60,8 +60,32 @@ S<script :>
 sur, il faut d'abord que vous l'ayez rendu exécutable, en tapant C<chmod 755
 script.pl> (sous Unix).
 
+(Cette première ligne suppose que vous disposez du programme
+B<env>. Vous pouvez plutôt y placer directement le chemin d'accès de
+votre exécutable perl. Par exemple C<#!/usr/bin/perl>.)
+
 Pour plus d'informations, en particulier les instructions pour d'autres
 plates-formes comme Windows et Mac OS, référez vous à L<perlrun>.
+
+=head2 Filet de sécurité
+
+Perl, par défaut, est très permissif. Afin de le rendre exigeant et
+donc plus robuste, il est recommandé de débuter chaque programme par
+les lignes S<suivantes :>
+
+   #!/usr/bin/perl
+   use strict;
+   use warnings;
+
+Ces deux lignes supplémentaires demandent à perl de rechercher dans
+votre code différents problèmes courants. Chacune d'entre elles
+permettant la vérification de choses différentes, vous avez donc
+besoin de ces deux lignes. La détection d'un problème potentiel par
+C<use strict;> arrêtera votre code immédiatement. À l'inverse, C<use
+warnings;> ne fera qu'afficher des avertissements (comme l'option
+B<-w> de la ligne de commande) et laissera votre code continuer. Pour
+en savoir plus sur ces vérifications, lisez leur documentation
+respective : L<strict> et L<warnings>.
 
 =head2 Les bases de la syntaxe
 
@@ -99,7 +123,7 @@ doubles ou simples S<(apostrophes) :>
     print 'Salut, la terre';
 
 Il y a cependant une différence importante entre guillemets simple et
-doubles. Une chaîne de caractère encadrée par des apostrophes s'affiche telle
+doubles. Une chaîne de caractères encadrée par des apostrophes s'affiche telle
 qu'elle a été saisie, tandis que dans les chaînes entre guillemets doubles
 Perl remplace les variables et les caractères spéciaux (par exemple les fins
 de lignes C<\n>) par leur valeur. On parle "d'interpolation" des variables.
@@ -136,12 +160,15 @@ Un scalaire représente une valeur S<unique :>
     my $animal = "chameau";
     my $reponse = 42;
 
-Les scalaires peuvent être indifféremment des chaînes de caractères, des
-entiers, des nombres en virgules flottante, des références (voir plus loin),
-plus quelques valeurs spéciales. Perl procédera automatiquement aux
-conversions nécessaires lorsque c'est cohérent (par exemple pour transformer
-en nombre une chaîne de caractère représentant un nombre). Il est inutile de
-déclarer au préalable le type des variables.
+Les scalaires peuvent être indifféremment des chaînes de caractères,
+des entiers, des nombres en virgules flottante, des références (voir
+plus loin), plus quelques valeurs spéciales. Perl procédera
+automatiquement aux conversions nécessaires lorsque c'est cohérent
+(par exemple pour transformer en nombre une chaîne de caractère
+représentant un nombre). Il est inutile de déclarer au préalable le
+type des variables mais, en revanche, vous devez déclarer vos
+variables lors de leur première utilisation en utilisant le mot-clé
+C<my>. (Ceci est l'une des exigences de C<use strict;>.)
 
 Les valeurs scalaires peuvent être utilisées de différentes S<manières :>
 
@@ -311,14 +338,15 @@ clé C<my> crée des variables à portées lexicales, c'est-à-dire qui ne sont
 connues qu'au sein du bloc (c.-à-d. un paquet de phrases entouré par des
 accolades) dans lequel elles sont définies.
 
-    my $a = "foo";
+    my $x = "foo";
+    ly $une_condition = 1m
     if ($une_condition) {
-        my $b = "bar";
-        print $a;           # Affiche "foo"
-        print $b;           # Affiche "bar"
+        my $y = "bar";
+        print $x;           # Affiche "foo"
+        print $y;           # Affiche "bar"
     }
-    print $a;               # Affiche "foo"
-    print $b;               # N'affiche rien; $b est hors de portée
+    print $x;               # Affiche "foo"
+    print $y;               # N'affiche rien; $y est hors de portée
 
 De plus, en utilisant C<my> en combinaison avec la phrase C<use strict;> au
 début de vos scripts Perl, l'interpréteur détectera un certain nombre
@@ -400,7 +428,7 @@ Vous pouvez aussi utiliser C<while> dans une S<post-condition :>
 
 La construction C<for> fonctionne exactement comme en S<C :>
 
-    for ($i=0; $i <= $max; $i++) {
+    for ($i = 0; $i <= $max; $i++) {
         ...
     }
 
@@ -414,7 +442,9 @@ parcours de liste C<foreach>.
         print "L'élément courant est $_\n";
     }
 
-    # Vous n'êtes pas non plus obligé d'utiliser $_ ...
+    print $list[$_] foreach 0 .. $max;
+
+    # vous n'êtes pas non plus obligé d'utiliser $_ ...
     foreach my $cle (keys %hash) {
         print "La valeur de $cle est $hash{$cle}\n";
     }
@@ -506,17 +536,20 @@ Vous pouvez ouvrir un fichier en entrée ou en sortie grâce à la fonction
 C<open()>. Celle-ci est documentée avec un luxe extravagant de détails dans
 L<perlfunc> et L<perlopentut>. Plus S<brièvement :>
 
-    open(INFILE,  "input.txt")   or die "Impossible d'ouvrir input.txt en lecture : $!";
-    open(OUTFILE, ">output.txt") or die "Impossible d'ouvrir output.txt en écriture : $!";
-    open(LOGFILE, ">>my.log")    or die "Impossible d'ouvrir logfile en ajout : $!";
+    open(my $in,  "<",  "input.txt")
+      or die "Impossible d'ouvrir input.txt en lecture : $!";
+    open(my $out, ">",  "output.txt")
+      or die "Impossible d'ouvrir output.txt en écriture : $!";
+    open(my $log, ">>", "my.log")
+      or die "Impossible d'ouvrir my.log en ajout : $!";
 
 Pour lire depuis un descripteur de fichier ouvert on utilise l'opérateur C<<
 <> >>.  Dans un contexte scalaire, cet opérateur lit une ligne du fichier
 associé. Dans un contexte de liste, il lit l'intégralité du fichier en
 rangeant chaque ligne dans un élément de la liste.
 
-    my $ligne  = <INFILE>;
-    my @lignes = <INFILE>;
+    my $ligne  = <$in>;
+    my @lignes = <în>;
 
 Lire un fichier entier en une seule fois se dit "slurper". Même si cela peut
 parfois s'avérer utile, c'est généralement un gâchis de mémoire. La majorité
@@ -525,7 +558,7 @@ utilisant les structures de boucles de Perl.
 
 L'opérateur C<< <> >> apparaît en général dans une boucle S<C<while> :>
 
-    while (<INFILE>) {     # chaque ligne est successivement affectée à $_
+    while (<$in>) {  # chaque ligne est successivement affectée à $_
         print "Je viens de lire la ligne : $_";
     }
 
@@ -535,15 +568,15 @@ optionnel un descripteur de fichier, précisant dans quel fichier l'écriture
 doit avoir S<lieu :>
 
     print STDERR "Dernier avertissement.\n";
-    print OUTFILE $record;
-    print LOGFILE $logmessage;
+    print $out $record;
+    print $log $logmessage;
 
 Quand vous avez fini de travailler avec vos descripteurs de fichier, vous
 devez en principe les fermer à l'aide de la fonction C<close()> (quoique pour
 être tout à fait honnêtes, Perl se chargera de faire le ménage si vous
 oubliez)E<nbsp>:
 
-    close INFILE;
+    close $in;
 
 =head2 Expressions régulières (ou rationnelles)
 
@@ -558,7 +591,7 @@ autres. Nous allons les présenter S<brièvement :>
 
 =item Détection de motifs simples
 
-    if (/foo/)  { ... }  # vrai si $_ contient "foo"
+    if (/foo/)  { ... }       # vrai si $_ contient "foo"
     if ($a =~ /foo/) { ... }  # vrai si $a contient "foo"
 
 L'opérateur C<//> de détection de motif est documenté dans L<perlop>. Par
@@ -584,40 +617,40 @@ motif imaginable en utilisant des expressions régulières plus
 complexes. Celles-ci sont documentées en profondeur dans L<perlre>. Pour vous
 mettre en bouche voici déjà une petite S<antisèche :>
 
-    .                   un caractère unique (n'importe lequel)
-    \s                  un blanc (espace, tabulation, à la ligne)
-    \S                  un caractère non-blanc (le contraire du précédent)
-    \d                  un chiffre (0-9)
-    \D                  un non-chiffre
-    \w                  un caractère alphanumérique (a-z, A-Z, 0-9, _)
-    \W                  un non-alphanumérique
-    [aeiou]             n'importe quel caractère de l'ensemble entre crochets
-    [^aeiou]            n'importe quel caractère sauf ceux de l'ensemble entre crochets
-    (foo|bar|baz)       n'importe laquelle des alternatives proposées
+    .              un caractère unique (n'importe lequel)
+    \s             un blanc (espace, tabulation, passage à la ligne...)
+    \S             un caractère non-blanc (le contraire du précédent)
+    \d             un chiffre (0-9)
+    \D             un non-chiffre
+    \w             un caractère alphanumérique (a-z, A-Z, 0-9, _)
+    \W             un non-alphanumérique
+    [aeiou]        n'importe quel caractère de l'ensemble entre crochets
+    [^aeiou]       n'importe quel caractère sauf ceux de l'ensemble entre crochets
+    (foo|bar|baz)  n'importe laquelle des alternatives proposées
 
-    ^                   le début d'une chaîne de caractères
-    $                   la fin d'une chaîne de caractères
+    ^              le début d'une chaîne de caractères
+    $              la fin d'une chaîne de caractères
 
 Des quantificateurs peuvent être utilisés pour indiquer combien des éléments
 précédents vous désirez, un élément désignant aussi bien un caractère littéral
 qu'un des méta-caractères énumérés plus haut, ou encore un groupe de caractères
 ou de méta-caractères entre parenthèses.
 
-    *                   zéro ou plus
-    +                   un ou plus
-    ?                   zéro ou un
-    {3}                 exactement 3 fois l'élément précédent
-    {3,6}               entre 3 et 6 fois l'élément précédent
-    {3,}                3 ou plus des éléments précédents
+    *              zéro ou plus
+    +              un ou plus
+    ?              zéro ou un
+    {3}            exactement 3 fois l'élément précédent
+    {3,6}          entre 3 et 6 fois l'élément précédent
+    {3,}           3 ou plus des éléments précédents
 
 Quelques exemples S<rapides :>
 
-    /^\d+/              une chaîne commençant par un chiffre ou plus
-    /^$/                une chaîne vide (le début et la fin sont adjacents)
-    /(\d\s){3}/         un groupe de trois chiffres, chacun suivi par un blanc
-                        (par exemple "3 4 5 ")
-    /(a.)+/             une chaîne dont toutes les lettres impaires sont des a
-                        (par exemple "abacadaf")
+    /^\d+/         une chaîne commençant par un chiffre ou plus
+    /^$/           une chaîne vide (le début et la fin sont adjacents)
+    /(\d\s){3}/    un groupe de trois chiffres, chacun suivi par un blanc
+                   (par exemple "3 4 5 ")
+    /(a.)+/        une chaîne dont toutes les lettres impaires sont des a
+                   (par exemple "abacadaf")
 
     # La boucle suivante lit l'entrée standard
     # et affiche toutes les lignes non vides :
@@ -653,10 +686,16 @@ savoir lisez L<perlrequick>, L<perlretut> et L<perlre>.
 
 Rien n'est plus facile que de déclarer un S<sous-programme :>
 
-    sub log {
+    sub logger {
         my $logmessage = shift;
-        print LOGFILE $logmessage;
+        open my $logfile, ">>", "my.log" or die "Impossible d'ouvrir my.log: $!";
+        print $logfile $logmessage;
     }
+
+Vous pouvez maintenant utiliser ce sous-programme comme n'importe
+quelle autre fonction S<prédéfinie :>
+
+    logger("Nous avons un sous-programme de log !");
 
 Que peut bien vouloir dire ce C<shift>E<nbsp>? En réalité, comme nous l'avions
 évoqué plus haut, les paramètres sont transmis aux sous-programmes à travers le
@@ -677,6 +716,10 @@ Les sous-programmes peuvent bien entendu retourner des S<résultats :>
         my $result = $num * $num;
         return $result;
     }
+
+Utilisez-le comme S<ceci :>
+
+    $sq = square(8);
 
 Le sujet est évidemment beaucoup plus complexe. Pour plus d'informations sur
 l'écriture de sous-programmes, voyez L<perlsub>.
@@ -734,12 +777,14 @@ est une marque déposée de O'Reilly & Associates
 =head2 Version
 
 Cette traduction française correspond à la version anglaise distribuée avec
-perl 5.8.8.  Pour en savoir plus concernant ces traductions, consultez
+perl 5.10.0.  Pour en savoir plus concernant ces traductions, consultez
 L<http://perl.enstimac.fr/>.
 
 =head2 Traducteur
 
-Christophe Grosjean <krissg@wanadoo.fr>
+Pour la traduction initiale, Christophe Grosjean <krissg@wanadoo.fr>
+et pour la mise à jour en version 5.10.0, Paul Gaborit (Paul.Gaborit
+at enstimac.fr).
 
 =head2 Relecture
 

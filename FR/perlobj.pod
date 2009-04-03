@@ -148,14 +148,15 @@ Contrairement à, disons, C++, Perl ne fournit aucune syntaxe spéciale
 pour les définitions de classes. Vous utilisez un paquetage en tant
 que classe en mettant des définitions de méthodes dans la classe.
 
-Il existe un tableau spécial appelé @ISA à l'intérieur de chaque paquetage,
-qui dit où trouver une méthode si on ne la trouve pas dans le paquetage
-courant. C'est de cette façon que Perl implémente l'héritage. Chaque élément
-du tableau @ISA est juste le nom d'un autre paquetage qui s'avère être un
-paquetage de classe. Les classes sont fouillées (en profondeur tout d'abord) à
-la recherche des méthodes manquantes dans l'ordre où elles apparaissent dans
-@ISA. Les classes accessibles à travers @ISA sont les classes de base de la
-classe courante.
+Il existe un tableau spécial appelé @ISA à l'intérieur de chaque
+paquetage, qui dit où trouver une méthode si on ne la trouve pas dans
+le paquetage courant. C'est de cette façon que Perl implémente
+l'héritage. Chaque élément du tableau @ISA est juste le nom d'un autre
+paquetage qui s'avère être un paquetage de classe. Les méthodes
+manquantes sont recherchées dans cette arborescence de classes en
+profondeur et de gauche à droite par défaut (voir L<mro> pour
+spécifier d'autres ordres de recherche). Les classes accessibles à
+travers @ISA sont les classes de base de la classe courante.
 
 Toutes les classes héritent implicitement de la classe C<UNIVERSAL> en
 tant que dernière classe de base. Plusieurs méthodes couramment
@@ -615,7 +616,7 @@ de style sur la construction de modules et de classes.
 =head2 Version
 
 Cette traduction française correspond à la version anglaise distribuée avec
-perl 5.8.8.  Pour en savoir plus concernant ces traductions, consultez
+perl 5.10.0.  Pour en savoir plus concernant ces traductions, consultez
 L<http://perl.enstimac.fr/>.
 
 =head2 Traducteur

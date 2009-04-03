@@ -2,7 +2,7 @@
 
 =head1 NAME/NOM
 
-perlfaq6 - Expressions rationnelles  ($Revision: 1.1 $, $Date: 2006/09/26 08:08:41 $)
+perlfaq6 - Expressions rationnelles
 
 =head1 DESCRIPTION
 

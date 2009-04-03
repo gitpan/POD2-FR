@@ -2,7 +2,7 @@
 
 =head1 NAME/NOM
 
-perlfaq3 - Outils de programmation ($Revision: 1.1 $, $Date: 2006/09/26 08:08:41 $)
+perlfaq3 - Outils de programmation
 
 =head1 DESCRIPTION
 

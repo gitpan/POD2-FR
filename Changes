@@ -5,6 +5,25 @@ Revision history for Perl extension POD2::FR.
    * = incompatible changes
    - = removed feature
 
+0.3  Wed Apr  1 09:14:53 2009
+
+	+ Add Test::Pod in tests.
+
+        ! Updated or new translated pods for 5.10.0: perl,
+          perlartistic, perlbook, perlboot, perlbot, perldata,
+          perldebtut, perldsc, perlhist, perlintro, perllol,
+          perlnumber, perlobj, perlopentut, perlpod, perlreftut,
+          perlrequick, perlsec, perlstyle, perltie, perltooc,
+          perltoot, perltrap.
+
+        ! Replaced header 'NOM' by 'NAME/NOM' as first head for all
+          old translated pods.
+
+	! Updated translated perldiag ('package' instead of
+          'paquetage' in error messages).
+
+	! Minor changes in some translated pods.
+
 0.2  Tue Sep 26 09:07:51 2006
 
         + Added perlnumber.pod

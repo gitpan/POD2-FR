@@ -1,6 +1,6 @@
 =encoding iso-8859-1
 
-=head1 NOM
+=head1 NAME/NOM
 
 perldiag - Les différents messages de Perl
 
@@ -32,7 +32,7 @@ lettres, alors que C<[> et C<\> trient après.
 
 =over 4
 
-=item "my" variable %s can't be in a paquetage
+=item "my" variable %s can't be in a package
 
 (F) La portée des variables n'est pas dans le paquetage, et cela n'a
 pas de sens d'essayer d'en déclarer une avec le nom du paquetage
@@ -488,7 +488,7 @@ L<perlobj>.
 l'exécution avec le débuggeur, indiquant que la ligne spécifiée n'est
 pas l'emplacement d'une expression qui peut être stoppée.
 
-=item Can't call method "%s" in empty paquetage "%s"
+=item Can't call method "%s" in empty package "%s"
 
 (F) Vous appelez une méthode correctement, et vous avez indiqué
 correctement le paquetage fonctionnant comme une classe, mais ce
@@ -502,7 +502,7 @@ que vous soumettez, mais vous ne soumettez pas de référence d'objet
 dans ce cas là. Une référence n'est pas une référence d'objet jusqu'à
 qu'il ait été consacré (blessed).  Voir L<perlobj>.
 
-=item Can't call method "%s" without a paquetage or object reference
+=item Can't call method "%s" without a package or object reference
 
 (F) Vous utilisez la syntaxe d'un appel de méthode, mais l'endroit
 rempli par la référence d'objet ou le nom du paquetage contient une
@@ -775,14 +775,14 @@ dire où se trouve votre librairie supplémentaire, ou peut-être le script
 nécessite que vous ajoutiez le nom de votre librairie à @INC. Ou peut-être
 avez-vous mal épelé le nom de votre fichier. Voir C<require()> dans L<perlfunc>.
 
-=item Can't locate object method "%s" via paquetage "%s"
+=item Can't locate object method "%s" via package "%s"
 
 (F) Vous appelez un méthode correctement, et vous avez indiqué
 correctement un paquetage fonctionnant comme une classe, mais le
 paquetage ne définit pas cette méthode, ni aucune de ses classes
 parentes. Voir L<perlobj>.
 
-=item Can't locate paquetage %s for @%s::ISA
+=item Can't locate package %s for @%s::ISA
 
 (W) Le tableau @ISA contient un nom d'un autre paquetage qu'il ne
 semble pas exister.
@@ -1012,7 +1012,7 @@ un endroit temporaire, et recommencer.
 (F) Une chaîne de la forme C<CORE::word> a été donné à prototype(),
 mais il n'existe pas de variable interne nommée C<word>.
 
-=item Cannot resolve method `%s' overloading `%s' in paquetage `%s'
+=item Cannot resolve method `%s' overloading `%s' in package `%s'
 
 (F|P) Une erreur lors de la résolution de la surcharge spécifiée par
 le nom de méthode (à l'opposé d'un référence de sous-fonction)E<nbsp>: aucune
@@ -1253,7 +1253,7 @@ comme un goto, ou un contrôle de boucle.
 (W) Vous êtes sorti d'une substitution d'une façon non
 conventionnelle, comme un goto, un return, ou un contrôle de boucle.
 
-=item Explicit blessing to '' (assuming paquetage main)
+=item Explicit blessing to '' (assuming package main)
 
 (W) Vous consacrez (to bless) une référence à une chaîne de longueur
 nulle. Cela a pour effet de consacrer la référence dans le paquetage
@@ -1368,7 +1368,7 @@ ce qu'il attendait être un terme, donc il recherche la parenthèse
 droite correspondante, et ne la trouve pas. Il y a des chances que vous
 ayez oublié des parenthèses nécessaires plus tôt dans la ligne.
 
-=item Global symbol "%s" requires explicit paquetage name
+=item Global symbol "%s" requires explicit package name
 
 (F) Vous spécifiez «E<nbsp>use strict varsE<nbsp>», ce qui indique que toutes les
 variables doivent être ou déclarées locales (en utilisant «E<nbsp>myE<nbsp>»), ou
@@ -1601,7 +1601,7 @@ l'appelez. Voir C<redo()> dans L<perlfunc>.
 avez-vous oublié de vérifier la valeur retournée par l'appel de
 socket()E<nbsp>? Voir C<listen()> dans L<perlfunc>.
 
-=item Method for operation %s not found in paquetage %s during
+=item Method for operation %s not found in package %s during
 blessing
 
 (F) Une tentative a été effectuée pour spécifier une entrée dans une
@@ -2334,13 +2334,12 @@ Vérifiez votre flux logique de données.
 produire la sortie désirée ait été compilé dans Perl, ce qui implique
 certaines contraintes non disponibles dans votre version de Perl. 
 
-=item Recursive inheritance detected in paquetage '%s'
+=item Recursive inheritance detected in package '%s'
 
 (F) Au moins 100 niveaux d'héritage ont été utilisés. Cela indique
 probablement une boucle inattendue dans votre hiérarchie de classes. 
 
-=item Recursive inheritance detected while looking for method '%s' in
-paquetage '%s'
+=item Recursive inheritance detected while looking for method '%s' in package '%s'
 
 (F) Au moins 100 niveaux d'héritage ont été rencontrés lors de
 l'appel de méthodes. Cela indique probablement une boucle inattendue
@@ -2597,8 +2596,7 @@ rien à moins d'une erreur. Vous voulez probablement utiliser system() à
 la place, qui lui retourne. Pour supprimer ce warning, mettez le exec
 dans un bloc tout seul. 
 
-=item Stub found while resolving method `%s' overloading `%s' in
-paquetage `%s'
+=item Stub found while resolving method `%s' overloading `%s' in package `%s'
 
 (P) Surcharger la résolution au dessus de l'arbre @ISA peut être
 rompue par l'importation de stubs. Les stubs ne peuvent jamais être

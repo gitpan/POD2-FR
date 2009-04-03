@@ -1,6 +1,6 @@
 =encoding iso-8859-1
 
-=head1 NOM
+=head1 NAME/NOM
 
 perlmod - Modules Perl (paquetages et tables de symboles)
 

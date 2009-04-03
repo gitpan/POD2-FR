@@ -69,7 +69,7 @@ Les références peuvent être créées de plusieurs façons.
 
 =over 4
 
-=item 1.
+=item 1
 X<\> X<backslash> X<barre oblique inverse>
 
 En utilisant l'opérateur "backslash" [barre oblique inverse, ndt] sur
@@ -94,7 +94,7 @@ table des symboles. Voir l'explication de la syntaxe C<*foo{THING}>
 ci-dessous. Quoi qu'il en soit, vous pouvez toujours utiliser les
 typeglobs et les globrefs comme s'il étaient des descripteur d'E/S.
 
-=item 2.
+=item 2
 X<tableau anonyme> X<[]> X<crochet> X<référence à un tableau>
 X<tableau, référence à un>
 
@@ -123,7 +123,7 @@ en est de même pour C<%foo> sauf évidemment pour les clés elle-mêmes
 qui seront simplement recopiées (puisque les clés sont justes des
 chaînes de caractères et non des scalaires au sens large).
 
-=item 3.
+=item 3
 X<table de hachage anonyme> X<{}> X<accolade>
 X<référence à une table de hachage> X<table de hachage, référence à une>
 
@@ -171,7 +171,7 @@ faire S<ceci :>
 Les C<+{> et C<{;> en début servent à différencier de manière
 explicite soit une référence à un TABLE DE HACHAGE soit un BLOC.
 
-=item 4.
+=item 4
 X<subroutine anonyme> X<sous-programme anonyme>
 X<référence à un sous-programme> X<sous-programme, référence à un>
 X<référence à une subroutine> X<subroutine, référence à une>
@@ -237,7 +237,7 @@ dynamiques continuent de fonctionner comme elle l'ont toujours
 fait. La fermeture n'est pas une chose dont la plupart des
 programmeurs Perl ont besoin de s'embarraser pour commencer.
 
-=item 5.
+=item 5
 X<constructeur> X<new>
 
 Les références sont souvent retournées par des routines spéciales
@@ -263,7 +263,7 @@ Mais il n'est pas nécessaire S<d'avoir :>
     $menubar = $main->Frame(-relief              => "raised",
                             -borderwidth         => 2)
 
-=item 6.
+=item 6
 X<autovivification>
 
 Des références de type approprié peuvent venir a exister si vous les
@@ -271,7 +271,7 @@ déréférencez dans un contexte qui suppose qu'elles existent. Comme
 nous n'avons pas encore parlé du déréférencement, nous ne pouvons
 toujorus pas vous montrer d'exemples.
 
-=item 7.
+=item 7
 X<*foo{THING}> X<*>
 
 Une référence peut être créée en utilisant une syntaxe particulière,
@@ -342,7 +342,8 @@ plusieurs méthodes de base.
 
 =over 4
 
-=item 1.
+=item 1
+X<référence, usage>
 
 Où que vous mettiez un identifiant (ou une chaîne
 d'identifiants) comme partie d'une variable ou d'une nom de
@@ -367,7 +368,7 @@ récursive. Le code suivant imprime par conséquent "howdy".
     $refrefref = \\\"howdy";
     print $$$$refrefref;
 
-=item 2.
+=item 2
 X<${}> X<@{}> X<%{}>
 
 Où que vous mettiez un identifiant (ou une chaîne d'identifiants)
@@ -407,7 +408,7 @@ variable appelée %hashref, sans déréférencer par $hashref
 la table de hachage qu'il référence probablement. Ceci correspond au
 S<cas 3.>
 
-=item 3.
+=item 3
 X<autovivification> X<-E<gt>> X<flèche>
 
 Les appels de routines et les recherches d'éléments individuels de
@@ -448,10 +449,9 @@ S<C :>
     $score[$x][$y][$z] += 42;
 
 Bon, d'accord, pas complètement comme en C, en fait. Le C ne sait pas
-comment aggrandir ses tableaux à la
-demande. Perl le sait.
+comment aggrandir ses tableaux à la demande. Perl le sait.
 
-=item 4.
+=item 4
 X<encapsulation>
 
 Si une référence se révèle être une référence à un objet, il existe

@@ -2,7 +2,7 @@
 
 =head1 NAME/NOM
 
-perlfaq1 - Questions d'ordre général sur Perl ($Revision: 1.1 $, $Date: 2006/09/26 08:08:41 $)
+perlfaq1 - Questions d'ordre général sur Perl
 
 =head1 DESCRIPTION
 
@@ -430,7 +430,7 @@ En août 2000 dans toutes les distributions Linux, il a été trouvé un
 nouveau problème de sécurité dans la commande optionnelle 'suidperl'
 (qui n'est pas installée par défaut) fournie avec les branches Perl
 5.6, 5.005 et 5.004 (voir
-http://www.cpan.org/sr©5.0/sperl-2000-08-05/). Les versions de
+http://www.cpan.org/src/5.0/sperl-2000-08-05/). Les versions de
 maintenance 5.6.1 et 5.8.0 comblent ce trou de sécurité. La plupart,
 mais pas toutes, des distributions Linux proposent des correctifs pour
 cette vulnérabilité (voir http://www.linuxsecurity.com/advisories/)

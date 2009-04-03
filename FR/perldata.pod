@@ -12,7 +12,7 @@ Perl a trois types de données intégrésE<nbsp>: les scalaires, les
 tableaux de scalaires et les tableaux associatifs de scalaires,
 appelés aussi tables de hachage ou «E<nbsp>hachagesE<nbsp>». Un
 scalaire est soit une simple chaîne de caractères (sans limite de
-taille si ce n'est la mémoire disponible), soit un nombre, soit un
+taille si ce n'est la mémoire disponible), soit un nombre, soit une
 référence à quelque chose (notion expliquée dans L<perlref>). Les
 tableaux normaux sont des listes ordonnées de scalaires indexées par
 des nombres, en commençant par 0. Les tables de hachages sont des
@@ -49,18 +49,19 @@ X<variables prédéfinies>
 Les valeurs scalaires sont toujours désignées par un '$', même si l'on
 se réfère à un scalaire qui fait partie d'un tableau ou d'un
 hachage. Le symbole '$' fonctionne d'un point de vue sémantique comme
-les mots «E<nbsp>leE<nbsp>» ou «E<nbsp>laE<nbsp>» dans le sens où ils
-indiquent qu'on attend une seule valeur.
+les articles «E<nbsp>leE<nbsp>» ou «E<nbsp>laE<nbsp>» dans le sens où
+ils indiquent qu'on attend une seule valeur.
 X<scalaire>
 
     $days               # la simple valeur scalaire "days"
-    $days[28]           # le 29ème élément du tableau @days
+    $days[28]           # le 29e élément du tableau @days
     $days{'Feb'}        # la veleur 'Feb' dans le hachage %days
     $#days              # le dernier indice du tableau @days
 
-Les tableaux complets (et les tranches de tableaux ou de hachage sont dénotés
-par '@', qui fonctionne plutôt comme le mot «E<nbsp>cesE<nbsp>, en ce sens
-qu'il indique que des valeurs multiples sont attenduesE<nbsp>.
+Les tableaux complets (et les tranches de tableaux ou de hachages)
+sont dénotés par '@', qui fonctionne plutôt comme le mot
+«E<nbsp>cesE<nbsp>», en ce sens qu'il indique que de multiples valeurs
+sont attenduesE<nbsp>.
 X<tableau>
 
     @days               # ($days[0], $days[1],... $days[n])
@@ -76,12 +77,12 @@ De plus, les sous-programmes sont nommés avec un '&' initial, bien que ce soit
 optionnel lorsqu'il n'y a pas d'ambiguïté, tout comme «E<nbsp>faireE<nbsp>»
 est souvent redondant en français. Les entrées des tables de symboles peuvent
 être nommées avec un '*' initial, mais vous ne vous souciez pas vraiment de
-cela pour le moment (si jamaisE<nbsp>:-).
+cela pour le moment (sait-on jamais...E<nbsp>:-)).
 
 Chaque type de variable a son propre espace de nommage, tout comme les
 identifiants de plusieurs types autres que les variables. Ceci signifie que
-vous pouvez, sans craindre un conflit, utiliser le même nom pour une variable
-scalaire, un tableau, ou un hachage -- ou, pour cette affaire, un handle de
+vous pouvez, sans craindre de conflit, utiliser le même nom pour une variable
+scalaire, un tableau, ou un hachage -- mais aussi pour un handle de
 fichier, un handle de répertoire, un nom de sous-programme, ou un label. Ceci
 veut dire que $foo et @foo sont deux variables différentes. Ceci veut aussi
 dire que C<$foo[1]> fait partie de @foo, et pas de $foo. Cela peut sembler un
@@ -287,17 +288,21 @@ rien laisser au hasardE<nbsp>:
 
     $element_count = scalar(@whatever);
 
-Si vous évaluez un hachage dans un contexte scalaire, vous obtenez faux si le
-hachage est vide. S'il contient une paire clé/valeur quelconque, il renvoie
-vraiE<nbsp>; plus précisément, la valeur retournée est une chaîne constituée
-du nombre de buckets utilisés et du nombre de buckets alloués, séparés par un
-signe de division. Ceci n'a tendance à être très utile que pour déterminer si
-les algorithmes de hachage (compilés) en Perl ont des performances médiocres
-sur vos données. Par exemple, vous mettez 10E<nbsp>000 trucs dans un hachage,
-mais l'évaluation de %HASH dans un contexte scalaire révèle
-«E<nbsp>1/16E<nbsp>», ce qui signifie qu'un seul des seize buckets a été
-touché, et contient probablement tous vos 10E<nbsp>000 éléments. Cela ne
-devrait pas se produire).
+Si vous évaluez un hachage dans un contexte scalaire, vous obtenez
+faux si le hachage est vide. S'il contient une paire clé/valeur
+quelconque, il renvoie vraiE<nbsp>; plus précisément, la valeur
+retournée est une chaîne constituée du nombre de buckets utilisés et
+du nombre de buckets alloués, séparés par un signe de division. Ceci
+n'a d'intérêt que pour déterminer si les algorithmes de hachage
+(compilés) en Perl ont des performances médiocres sur vos données. Par
+exemple, vous mettez 10E<nbsp>000 trucs dans un hachage, mais
+l'évaluation de %HASH dans un contexte scalaire révèle
+«E<nbsp>1/16E<nbsp>», ce qui signifie qu'un seul des seize buckets a
+été touché, et contient probablement tous vos 10E<nbsp>000
+éléments. Cela ne devrait pas se produire. L'évaluation d'une table de
+hachage liée (par 'tie') dans un contexte scalaire engendrera une
+erreur fatale puisque l'information d'utilisation de bucket pour les
+tables de hachage liées n'est pour l'instant pas disponible.
 X<table de hachage, contexte scalaire> X<table de hachage, bucket> X<bucket>
 
 Vous pouvez préalloué de la mémoire pour une table de hachage en
@@ -340,10 +345,10 @@ etc., que sous des formes plus exotiques. Voir L<perlop/"Opérateurs
 apostrophe et type apostrophe"> pour une liste.
 X<chaîne de caractères, littérale>
 
-Les représentations hexadécimales, octales ou binaires sous forme de chaînes
-(e.g. '0xff') ne sont pas automatiquement converties sous leur représentation
-entière. Les fonctions hex() et oct() font ces conversions pour vous. Voir
-L<hex()> et L<oct()> pour plus de détails.
+Les représentations hexadécimales, octales ou binaires sous forme de
+chaînes (e.g. '0xff') ne sont pas automatiquement converties sous leur
+représentation entière. Les fonctions hex() et oct() font ces
+conversions pour vous. Voir L<hex()> et L<oct()> pour plus de détails.
 
 Vous pouvez aussi inclure des «E<nbsp>nouvelles lignesE<nbsp>»
 directement dans vos chaînes, i.e., elles peuvent se terminer sur une
@@ -364,6 +369,12 @@ X<interpolation>
 
 Il n'y a pas de double interpolation en Perl, donc '$100' restera tel
 quel.
+
+Par défaut les nombres flottants interpolés dans une chaîne utilise le
+point (".") comme séparateur décimal. Si C<use locale> est actif et
+que POSIX::setlocale() a été appelé, le caractère utilisé comme
+séparateur décimal dépend du locale LC_NUMERIC. Voir L<perllocale> et
+L<POSIX>.
 
 Comme dans certains shells, vous pouvez mettre des accolades autour
 d'un nom pour le séparer des caractères alphanumériques (et du
@@ -393,10 +404,10 @@ C<$version{'2.0'}>.
 
 =head3 Chaîne de version X<chaîne de version> X<vstring> X<v-string>
 
-S<B<NOTE> :> les chaînes de version sont dépréciées. Elle ne seront
-plus utilisables après Perl 5.8. Le bénéfice minime des chaînes de
-version est largement inférieur aux surprises et confusions
-potentielles.
+S<B<NOTE> :> les chaînes de version (vstrings) sont dépréciées. Elle
+seront supprimées dans l'une des versions qui suivront Perl 5.8.1. Le
+bénéfice minime des chaînes de version est largement inférieur aux
+mauvaises surprises et confusions potentielles qu'elles entraînent.
 
 Un littéral de la forme C<v1.20.300.4000> est analysé comme une chaîne
 composée de caractères correspondants aux ordinaux spécifiés. Cette
@@ -440,9 +451,9 @@ pas de paquetage courant (à cause d'une directive C<package;>), __PACKAGE__
 est la valeur indéfinie.
 X<__FILE__> X<__LINE__> X<__PACKAGE__> X<line> X<file> X<package>
 
-Les deux caractères de contrôle ^D et ^Z, et les mots-clé __END__ et __DATA__
-peuvent être utilisés pour indique la fin logique d'un script avant la fin
-effective du fichier. Tout texte les suivant est ignoré.
+Les deux caractères de contrôle ^D et ^Z, et les mots-clé __END__ et
+__DATA__ peuvent être utilisés pour indique la fin logique d'un script
+avant la fin effective du fichier. Tout texte les suivant est ignoré.
 
 Le texte qui suit __DATA__ peut être lu via le handle de fichier
 C<PACKNAME::DATA>, où C<PACKNAME> est le paquetage qui était courant lorsque
@@ -915,7 +926,7 @@ syntaxe C<*foo{THING}>.
 =head2 Version
 
 Cette traduction française correspond à la version anglaise distribuée
-avec perl 5.8.8.  Pour en savoir plus concernant ces traductions,
+avec perl 5.10.0.  Pour en savoir plus concernant ces traductions,
 consultez L<http://perl.enstimac.fr/>.
 
 =head2 Traducteur

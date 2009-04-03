@@ -1,17 +1,37 @@
 =encoding iso-8859-1
 
-=head1 NAME/NOM
+=head1 NAME/NOM X<opérateurs>
 
 perlop - Opérateurs Perl et priorité
 
-=head1 SYNOPSIS
+=head1 DESCRIPTION
 
-Le tableau suivant présente les opérateurs Perl et leur priorité, du plus
-prioritaire au moins prioritaire. Remarquez que tous les opérateurs empruntés
-au C gardent le même ordre de priorité entre eux même lorsque ces priorités
-sont légèrement tordues. (Cela rend plus simple l'apprentissage de Perl par
-les programmeurs C.) À quelques exceptions près, tous ces opérateurs agissent
-sur des valeurs scalaires et pas sur des tableaux de valeurs.
+=head2 Priorité des opérateurs et associativité X<opérateurs, règles de priorité> X<priorité> X<associativité>
+
+Les règles de priorité et d'associativité des opérateurs en Perl
+fonctionnent à peu près comme en mathématique.
+
+Les I<règles de priorité> entre les opérateurs déterminent l'ordre
+d'évaluation de ces opérateurs. Par exemple, dans C<2 + 4 * 5>, la
+multiplication a une plus grande priorité et donc C<4 * 5> est évalué
+en premier pour finalement calculer C<2 + 20 == 22> et non C<6 * 5 ==
+30>.
+
+Les I<règles d'associativité> des opérateurs définissent l'ordre dans
+lequel est évaluée une séquence composée de plusieurs occurrences d'un
+même opérateur : ces occurrences, selon l'opérateur, peuvent être
+évaluées en commençant par celle de gauche ou par celle de droite. Par
+exemple, dans C<8 - 4 -2>, la soustraction étant associative à gauche,
+Perl évalue l'expression de gauche à droite. C<8 - 4> est évalué en
+premier pour finalement calculer C<4 - 2 == 2> et non C<8 - 2 == 6>.
+
+Le tableau suivant présente les opérateurs Perl et leur priorité, du
+plus prioritaire au moins prioritaire. Remarquez que tous les
+opérateurs empruntés au langage C gardent le même ordre de priorité
+entre eux même lorsque ces priorités sont légèrement tordues. (Cela
+rend plus simple l'apprentissage de Perl par les programmeurs C.) À
+quelques exceptions près, tous ces opérateurs agissent sur des valeurs
+scalaires et pas sur des tableaux de valeurs.
 
     gauche      termes et opérateurs de listes (leftward)
     gauche      ->
@@ -28,7 +48,7 @@ sur des valeurs scalaires et pas sur des tableaux de valeurs.
     gauche      &
     gauche      | ^
     gauche      &&
-    gauche      ||
+    gauche      || //
     nonassoc    ..  ...
     droite      ?:
     droite      = += -= *= etc.
@@ -36,7 +56,7 @@ sur des valeurs scalaires et pas sur des tableaux de valeurs.
     nonassoc    opérateurs de listes (rightward)
     droite      not
     gauche      and
-    gauche      or xor
+    gauche      or xor err
 
 Dans les sections qui suivent, ces opérateurs sont présentés par ordre de
 priorité.
@@ -44,9 +64,7 @@ priorité.
 De nombreux opérateurs peuvent être redéfinis pour des objets. Voir
 L<overload>.
 
-=head1 DESCRIPTION
-
-=head2 Termes et opérateurs de listes (leftward)
+=head2 Termes et opérateurs de listes (leftward) X<opérateurs de listes> X<termes>
 
 Un TERME a la plus haute priorité en Perl. Cela inclut les variables, les
 apostrophes et autres opérateurs style apostrophe, les expressions entre
@@ -87,17 +105,28 @@ Remarquez aussi S<que :>
 
     print ($foo & 255) + 1, "\n";
 
-ne donne probablement pas ce que vous attendiez à priori. Voir les
-L<Opérateurs unaires nommés> pour plus de détails.
+ne donnera probablement pas ce que vous attendiez à priori. Les
+parenthèses entourent la liste d'arguments du C<print> qui est évalué
+(en affichant le résultat de C<$foo & 255>). Ensuite la valeur un est
+additionnée au résultat retourné par C<print> (habituellement 1). Le
+résultat est donc quelque chose S<comme :>
+
+    1 + 1, "\n"; # Évidemment pas ce que vous souhaitiez
+
+Pour faire cela proprement, il faut S<écrire :>
+
+    print(($foo & 255) + 1, "\n");
+
+Voir les L<Opérateurs unaires nommés> pour plus de détails.
 
 Sont aussi reconnus comme des termes les constructions C<do {}> et C<eval {}>,
 les appels à des subroutines ou à des méthodes ainsi que les constructeurs
 anonymes C<[]> et C<{}>.
 
 Voir aussi L<Opérateurs apostrophe et type apostrophe> à la fin de
-cette section mais aussi L<"Les opérateurs d'E/S">.
+cette section mais aussi L<"Opérateurs d'E/S">.
 
-=head2 L'opérateur flèche
+=head2 L'opérateur flèche X<flèche> X<déréférencement> X<< -> >>
 
 Comme en C et en C++, "C<-E<gt>>" est un opérateur de déréférencement
 infixe. Si du côté droit on trouve soit C<[...]>, soit C<{...}>, soit C<(...)>
@@ -113,105 +142,147 @@ alors le côté gauche doit être soit un objet (une référence bénie -- par
 bless()) soit un nom de classe (c'est à dire un nom de package). Voir
 L<perlobj>.
 
-=head2 Auto-incrémentation et Auto-décrémentation
+=head2 Auto-incrémentation et auto-décrémentation X<incrémentation> X<décrémentation> X<auto-décrémentation> X<auto-incrémentation> X<++> X<-->
 
-"++" et "--" fonctionne comme en C. Placés avant la variable, ils incrémentent
-ou décrémentent la variable avant de retourner sa valeur. Placés après, ils
-incrémentent ou décrémentent la variable après avoir retourner sa valeur.
+Les opérateurs "++" et "--" fonctionnent comme en C. Placés avant la
+variable, ils incrémentent ou décrémentent la variable avant de
+retourner sa valeur. Placés après, ils incrémentent ou décrémentent la
+variable après avoir retourner sa valeur.
 
-De plus, l'opérateur d'auto-incrémentation inclut un comportement magique. Si
-vous incrémentez une variable numérique ou qui a déjà été utilisée dans un
-contexte numérique, vous obtenez l'incrément normal. Si, par contre, la
-variable n'a été utilisée que dans un contexte de chaîne et correspond au
-motif C</^[a-zA-Z]*[0-9]*$/>, l'incrémentation a lieu sur la chaîne elle-même
-en préservant les caractères dans leur intervalle et en gérant les éventuelles
-retenues :
+    $i = 0;  $j = 0;
+    print $i++;  # affiche 0
+    print ++$j;  # affiche 1
+
+Remarquez que, comme en C, Perl ne définit pas B<quand> la variable
+est incrémentée ou décrémentée. Vous savez juste que cela sera fait à
+un moment avant ou après le moment où la valeur est retournée. Cela
+signifie aussi que plusieurs modifications de la même variable dans
+une instruction n'ont pas un comportement garanti. Évitez donc des
+instructions S<comme :>
+
+    $i = $i ++;
+    print ++ $i + $i ++;
+
+Perl ne garantie pas le résultat des instructions ci-dessus.
+
+De plus, l'opérateur d'auto-incrémentation inclut un comportement
+magique. Si vous incrémentez une variable numérique ou qui a déjà été
+utilisée dans un contexte numérique, vous obtenez l'incrément
+normal. Si, par contre, la variable n'a été utilisée que dans un
+contexte de chaîne et correspond au motif C</^[a-zA-Z]*[0-9]*\z/>,
+l'incrémentation a lieu sur la chaîne elle-même en préservant les
+caractères dans leur intervalle et en gérant les éventuelles
+S<retenues :>
 
     print ++($foo = '99');      # affiche '100'
     print ++($foo = 'a0');      # affiche 'a1'
     print ++($foo = 'Az');      # affiche 'Ba'
     print ++($foo = 'zz');      # affiche 'aaa'
 
+La valeur C<undef> est toujours considérée comme numérique et en
+particulier est changée en C<0> avant son incrémentation (et donc
+l'incrémentation postfixée d'une valeur indéfinie retournera C<0>
+plutôt que C<undef>).
+
 L'opérateur d'auto-décrémentation n'est pas magique.
 
-=head2 Puissance
+=head2 Puissance X<puissance> X<**>
 
 L'opérateur binaire "**" est l'opérateur puissance. Remarquez qu'il est plus
 prioritaire que le moins unaire donc -2**4 signifie -(2**4) et non pas
 (-2)**4. (Il est implémenté par la fonction C pow(3) qui travaille réellement
 sur des doubles en interne.)
 
-=head2 Opérateurs symboliques unaires
+=head2 Opérateurs symboliques unaires X<opérateurs unaires>
 
-L'opérateur unaire "!" est la négation logique, i.e. "non". Voir aussi C<not>
-pour une version moins prioritaire de cet opération.
+L'opérateur unaire "!" est la négation logique, c.-à-d. "non". Voir aussi C<not>
+pour une version moins prioritaire de cette opération.
+X<!>
 
 L'opérateur unaire "-" est la négation arithmétique si l'opérande est
 numérique. Si l'opérande est un identificateur, il retourne une chaîne
-constituée du signe moins suivi de l'identificateur. Si la chaîne commence par
-un plus ou un moins, la valeur retournée est la chaîne commençant par le signe
-opposé. L'un des effets de ces règles est que C<-bareword> est équivalent à
-C<"-bareword">.
+constituée du signe moins suivi de l'identificateur. Si la chaîne qui
+suit commence par un plus ou un moins, la valeur retournée est la
+chaîne commençant par le signe opposé. L'un des effets de ces règles
+est que C<-bareword> est équivalent à C<"-bareword">. En revanche, si
+la chaîne qui suit commence par un caractère non-alphabétique (sauf
+"+" ou "-"), Perl tentera de convertir cette chaîne en une valeur
+numérique à laquelle la négation arithmétique sera appliquée. Si cette
+chaîne ne peut pas être convertie proprement en une valeur numérique,
+Perl émettra l'avertissement B<Argument "the string" isn't numeric in
+negation (-) at ...>.
+X<-> X<négation, arithmétique>
 
-L'opérateur unaire "~" effectue la négation bit à bit, i.e. le complément à
+L'opérateur unaire "~" effectue la négation bit à bit, c.-à-d. le complément à
 1. Par exemple C<0666 & ~027> vaut 0640. (Voir aussi L<Arithmétique entière>
 et L<Opérateurs bit à bit sur les chaînes>.) Notez que la taille du résultat
 dépend de la S<plate-forme :> ~0 a une taille de 32 bits sur une plate-forme
 32-bit et une taille de 64 bits sur une plate-forme 64-bit. Donc si vous
 attendez une certain nombre de bits, souvenez-vous d'utiliser l'opérateur &
 pour masquer les bits en excès.
+X<~> X<négation, binaire>
 
 L'opérateur unaire "+" n'a aucun effet même sur les chaînes. Il est pratique
 pour séparer syntaxiquement un nom de fonction d'une expression entre
 parenthèses qui autrement aurait été interprétée comme la liste complète des
 arguments de la fonction. (Voir les exemples de L<Termes et opérateurs de
 listes (leftward)>.)
+X<+>
 
 L'opérateur unaire "\" crée une référence vers ce qui le suit. Voir
 L<perlref>. Ne confondez pas ce comportement avec celui de la barre oblique
 inversée (backslash) à l'intérieur d'une chaîne bien que les deux formes
 proposent une sorte de protection contre l'interprétation de ce qui les suit.
+X<\> X<référence> X<backslash>
 
-=head2 Opérateurs d'application d'expressions rationnelles
+=head2 Opérateurs d'application d'expressions rationnelles X<=~> X<!~> X<application d'expressions rationnelles> X<opérateur, application d'expressions rationnelles>
 
-L'opérateur binaire "=~" applique un motif de reconnaissance à une expression
-scalaire. Plusieurs opérations cherchent ou modifient la chaîne $_ par
-défaut. Cet opérateur permet d'appliquer cette sorte d'opérations à d'autres
-chaînes. L'argument de droite est le motif de recherche, de substitution ou de
-remplacement. L'argument de gauche est ce qui est supposé être cherché,
-substitué ou remplacé à la place de la valeur par défaut $_. Dans un contexte
-scalaire, la valeur retournée indique généralement le succès de
-l'opération. Le comportement dans un contexte de liste dépend de chaque
-opérateur. Voir L<"Opérateurs apostrophe et type apostrophe">.
+L'opérateur binaire "=~" applique un motif de reconnaissance à une
+expression scalaire. Plusieurs opérations cherchent ou modifient la
+chaîne $_ par défaut. Cet opérateur permet d'appliquer cette sorte
+d'opérations à d'autres chaînes. L'argument de droite est le motif de
+recherche, de substitution ou de remplacement. L'argument de gauche
+est ce qui est supposé être cherché, substitué ou remplacé à la place
+de la valeur par défaut $_. Dans un contexte scalaire, la valeur
+retournée indique généralement le succès de l'opération. Le
+comportement dans un contexte de liste dépend de chaque
+opérateur. Pour plus de détails, voir L<"Opérateurs apostrophe et type
+apostrophe"> et, pour des exemples d'utilisation, voir L<perlreftut>.
 
-Si l'argument de droite est une expression plutôt qu'un motif de recherche, de
-substitution ou de remplacement, il est interprété comme un motif de recherche
-lors de l'exécution. Cela peut être moins efficace qu'une recherche explicite
-puisque le motif doit être compilé à chaque fois que l'expression est évaluée.
+Si l'argument de droite est une expression plutôt qu'un motif de
+recherche, de substitution ou de remplacement, il est interprété comme
+un motif de recherche lors de l'exécution.
 
 L'opérateur binaire "!~" est exactement comme "=~" sauf que la valeur
 retournée est le contraire au sens logique.
 
-=head2 Opérateurs type multiplication
+=head2 Opérateurs type multiplication X<opérateur, multiplication>
 
 L'opérateur binaire "*" multiplie deux nombres.
+X<*>
 
 L'opérateur binaire "/" divise deux nombres.
+X</> X<slash>
 
-L'opérateur binaire "%" calcule le modulo de deux nombres. Soit deux opérandes
-entiers donnés C<$a> et S<C<$b> :> si C<$b> est positif alors C<$a % $b> vaut
-C<$a> moins le plus grand multiple de C<$b> qui n'est pas plus grand que
-C<$a>. Si C<$b> est négatif alors C<$a % $b> vaut C<$a> moins le plus petit
-multiple de C<$b> qui n'est pas plus petit que C<$a> (i.e. le résultat est
-plus petit ou égal à zéro).  Remarquez que lorsque vous êtes dans la portée de
-C<use integer>, "%" vous donne accès directement à l'opérateur modulo tel
-qu'il est défini par votre compilateur C. Cet opérateur n'est pas très bien
-défini pour des opérandes négatifs mais il s'exécute plus rapidement.
+L'opérateur binaire "%" calcule le modulo de deux nombres. Soit deux
+opérandes entiers donnés C<$a> et S<C<$b> :> si C<$b> est positif
+alors C<$a % $b> vaut C<$a> moins le plus grand multiple de C<$b> qui
+n'est pas plus grand que C<$a>. Si C<$b> est négatif alors C<$a % $b>
+vaut C<$a> moins le plus petit multiple de C<$b> qui n'est pas plus
+petit que C<$a> (c.-à-d. le résultat est plus petit ou égal à zéro).
+Remarquez que lorsque vous êtes dans la portée de C<use integer>, "%"
+vous donne accès directement à l'opérateur modulo tel qu'il est défini
+par votre compilateur C. Cet opérateur n'est pas très bien défini pour
+des opérandes négatifs mais il s'exécute plus rapidement.
+X<%> X<reste> X<modulo> X<mod>
 
-L'opérateur binaire "x" est l'opérateur de répétition. Dans un contexte
-scalaire, il retourne une chaîne constituée de son opérande de gauche répété
-le nombre de fois spécifié par son opérande de droite. Dans un contexte de
-liste, si l'opérande de gauche est entre parenthèses, il répète la liste.
+L'opérateur binaire "x" est l'opérateur de répétition. Dans un
+contexte scalaire, il retourne une chaîne constituée de son opérande
+de gauche répété le nombre de fois spécifié par son opérande de
+droite. Dans un contexte de liste, si l'opérande de gauche est entre
+parenthèses ou est une liste formée par C<qw/chaîne/>, il répète la
+liste. Si l'opérande de droite est nul ou négatif, il retourne un
+chaîne vide ou une liste vide, selon le contexte.
 
     print '-' x 80;             # affiche une ligne de '-'
 
@@ -220,15 +291,18 @@ liste, si l'opérande de gauche est entre parenthèses, il répète la liste.
     @ones = (1) x 80;           # une liste de quatre-vingt 1.
     @ones = (5) x @ones;        # place tous les éléments à 5.
 
-=head2 Opérateurs type addition
+=head2 Opérateurs type addition X<opérateur, addition>
 
 L'opérateur binaire "+" retourne la somme de deux nombres.
+X<+>
 
 L'opérateur binaire "-" retourne la différence de deux nombres.
+X<->
 
 L'opérateur binaire "." concatène deux chaînes.
+X<chaîne, concaténation> X<concaténation> X<.>
 
-=head2 Opérateurs de décalages
+=head2 Opérateurs de décalages X<opérateur, décalage> X<<< << >>> X<<< >> >>> X<décalage à droite> X<décalage à gauche> X<décalage de bits>
 
 L'opérateur binaire "<<" retourne la valeur de son opérande de gauche décalée
 vers la gauche d'un nombre de bits spécifié par son opérande de droite. Les
@@ -238,23 +312,39 @@ L'opérateur binaire ">>" retourne la valeur de son opérande de gauche décalée
 vers la droite d'un nombre de bits spécifié par son opérande de droite. Les
 arguments devraient être des entiers. (Voir aussi L<Arithmétique entière>.)
 
-=head2 Opérateurs unaires nommés
+Notez que "<<" et ">>" en Perl sont implémentés en utilisant
+directement les opérateurs "<<" et ">>" du C. Si C<use integer> (voir
+L<Arithmétique entière>) est actif alors ce sont des entiers signés du
+C qui sont utilisés et sinon ce sont des entiers non signés. De plus,
+ces opérations ne génèrent jamais d'entiers plus grands que la limite
+imposée par le type d'entiers utilisé pour compiler Perl (32 ou 64
+bits).
+
+Le résultat obtenu lors d'un dépassement de capacité des entiers n'est
+pas défini puisqu'il ne l'est pas non plus en C. En d'autres termes,
+en supposant des entiers sur 32 bits, le résultat de C<< 1 << 32 >>
+est indéfini. Un décalage d'un nombre négatif de bits n'est pas défini
+non plus.
+
+=head2 Opérateurs unaires nommés X<opérateur, unaires nommés>
 
 Les différents opérateurs unaire nommés sont traités comme des fonctions à un
-argument avec des parenthèses optionnelles. Ceci inclut les opérateurs de
-tests de fichiers comme C<-f>, C<-M>, etc. Voir L<perlfunc>.
+argument avec des parenthèses optionnelles.
 
-Si un opérateur de liste (print(), etc.) ou un opérateur unaire (chdir(),
-etc.) est suivi d'une parenthèse ouvrante, l'opérateur et ses arguments entre
-parenthèses sont considérés comme de priorité la plus haute exactement comme
-n'importe quel appel à une fonction. S<Exemples :>
+Si un opérateur de liste (print(), etc.) ou un opérateur unaire
+(chdir(), etc.) est suivi d'une parenthèse ouvrante, l'opérateur et
+ses arguments entre parenthèses sont considérés comme de priorité la
+plus haute exactement comme n'importe quel appel à une fonction. Par
+exemple, puisque les opérateurs unaires nommés sont plus prioritaires
+que S<|| :>
 
     chdir $foo    || die;       # (chdir $foo) || die
     chdir($foo)   || die;       # (chdir $foo) || die
     chdir ($foo)  || die;       # (chdir $foo) || die
     chdir +($foo) || die;       # (chdir $foo) || die
 
-mais puisque * est plus prioritaire que S<|| :>
+mais puisque * est plus prioritaire que les opérateurs unaires
+S<nommés :>
 
     chdir $foo * 20;    # chdir ($foo * 20)
     chdir($foo) * 20;   # (chdir $foo) * 20
@@ -266,66 +356,103 @@ mais puisque * est plus prioritaire que S<|| :>
     rand (10) * 20;     # (rand 10) * 20
     rand +(10) * 20;    # rand (10 * 20)
 
+Du point de vue des priorités, les opérateurs de test sur fichiers
+comme C<-f>, C<-M>, I<etc.> sont traités comme des opérateurs unaires
+nommés mais ils ne suivent pas les règles liées aux parenthèses autour
+des arguments des fonctions. Cela signifie, par exemple, que
+C<-f($file).".bak"> est équivalent à C<-f "$file.bak">.
+X<-X> X<test sur fichiers> X<opérateur, test sur fichiers>
+
 Voir aussi L<"Termes et opérateurs de listes (leftward)">.
 
-=head2 Opérateurs de comparaisons
+=head2 Opérateurs de comparaisons X<opérateur, de comparaison>
 
 L'opérateur binaire "E<lt>" renvoie vrai si son opérande gauche est
-numériquement plus petit que son opérande droit.
+numériquement et strictement plus petit que son opérande droit.
+X<< < >>
 
 L'opérateur binaire "E<gt>" renvoie vrai si son opérande gauche est
-numériquement plus grand que son opérande droit.
+numériquement et strictement plus grand que son opérande droit.
+X<< > >>
 
 L'opérateur binaire "E<lt>=" renvoie vrai si son opérande gauche est
-numériquement plus petit ou égal que son opérande droit.
+numériquement plus petit ou égal à son opérande droit.
+X<< <= >>
 
 L'opérateur binaire "E<gt>=" renvoie vrai si son opérande gauche est
-numériquement plus grand ou égal que son opérande droit.
+numériquement plus grand ou égal à son opérande droit.
+X<< >= >>
 
 L'opérateur binaire "lt" renvoie vrai si son opérande gauche est
-alphabétiquement plus petit que son opérande droit.
+alphabétiquement et strictement plus petit que son opérande droit.
+X<lt>
 
 L'opérateur binaire "gt" renvoie vrai si son opérande gauche est
-alphabétiquement plus grand que son opérande droit.
+alphabétiquement et strictement plus grand que son opérande droit.
+X<gt>
 
 L'opérateur binaire "le" renvoie vrai si son opérande gauche est
-alphabétiquement plus petit ou égal que son opérande droit.
+alphabétiquement plus petit ou égal à son opérande droit.
+X<le>
 
 L'opérateur binaire "ge" renvoie vrai si son opérande gauche est
-alphabétiquement plus grand ou égal que son opérande droit.
+alphabétiquement plus grand ou égal à son opérande droit.
+X<ge>
 
-=head2 Opérateurs d'égalité
+=head2 Opérateurs d'égalité X<égalité> X<égal> X<opérateur, égalité>
 
 L'opérateur binaire "==" renvoie vrai si l'opérande gauche est numériquement
 égal à l'opérande droit.
+X<==>
 
 L'opérateur binaire "!=" renvoie vrai si l'opérande gauche n'est pas
 numériquement égal à l'opérande droit.
+X<!=>
 
-L'opérateur binaire "E<lt>=E<gt>" renvoie -1, 0 ou 1 selon que l'opérande
-gauche est numériquement et respectivement plus petit, égal ou plus grand que
-l'opérande droit.
+L'opérateur binaire "E<lt>=E<gt>" renvoie -1, 0 ou 1 selon que
+l'opérande gauche est numériquement et respectivement plus petit, égal
+ou plus grand que l'opérande droit. Si votre plate-forme reconnaît NaN
+(I<not-a-number>, n'est-pas-un-nombre) comme valeur numérique, son
+utilisation par "<=>" retourne undef. NaN n'est ni plus grand, ni plus
+petit, ni égal à quoi que ce soit (même pas NaN). NaN != NaN retourne
+vrai comme le fait NaN != n'importe quoi d'autre. Si votre plate-forme
+ne reconnaît pas NaN alors NaN est simplement une chaîne de caractères
+qui a 0 pour valeur numérique.
+X<< <=> >>
+
+    perl -le '$a = "NaN"; print "NaN est reconnu" if $a == $a'
+    perl -le '$a = "NaN"; print "NaN n'est pas reconnu" if $a != $a'
 
 L'opérateur binaire "eq" renvoie vrai si l'opérande gauche est égal
 alphabétiquement à l'opérande droit.
+X<eq>
 
 L'opérateur binaire "ne" renvoie vrai si l'opérande gauche n'est pas égal
 alphabétiquement à l'opérande droit.
+X<ne>
 
 L'opérateur binaire "cmp" renvoie -1, 0 ou 1 selon que l'opérande gauche est
 alphabétiquement et respectivement plus petit, égal ou plus grand que
 l'opérande droit.
+X<cmp>
 
-"lt", "le", "ge", "gt" et "cmp" utilise l'ordre de tri (collation) spécifié
-par le locale courant si C<use locale> est actif. Voir L<perllocale>.
+"lt", "le", "ge", "gt" et "cmp" utilisent l'ordre de tri (collation)
+spécifié par le locale courant si C<use locale> est actif. Voir
+L<perllocale>.
 
-=head2 Opérateur Et bit à bit
+=head2 Opérateur et bit à bit X<opérateur, bit à bit, et> X<et bit a bit> X<&>
 
 L'opérateur binaire "&" renvoie le résultat d'un ET bit à bit entre ses
 opérandes. (Voir aussi L<Arithmétique entière> et L<Opérateurs bit à bit sur
 les chaînes>.)
 
-=head2 Opérateurs Ou et Ou exclusif bit à bit
+Notez que "&" a une priorité plus faible que les opérateurs de
+comparaison si bien que les parenthèses sont indispensables dans un
+test comme S<ci-dessous :>
+
+     print "Pair\n" if ($x & 1) == 0;
+
+=head2 Opérateurs ou et ou exclusif bit à bit X<opérateur, bit à bit, ou> X<opérateur, bit à bit, ou exclusif> X<ou bit à bit> X<ou exclusif bit à bit> X<^> X<|>
 
 L'opérateur binaire "|" renvoie le résultat d'un OU bit à bit entre ses deux
 opérandes. (Voir aussi L<Arithmétique entière> et L<Opérateurs bit à bit sur
@@ -335,27 +462,45 @@ L'opérateur binaire "^" renvoie le résultat d'un OU EXCLUSIF (XOR) bit à bit
 entre ses deux opérandes. (Voir aussi L<Arithmétique entière> et L<Opérateurs
 bit à bit sur les chaînes>.)
 
-=head2 Et logique style C
+Notez que "|" et "^" ont une priorité plus faible que les opérateurs
+de comparaison si bien que les parenthèses sont indispensables dans un
+test comme S<ci-dessous :>
+
+   print "faux\n" if (8 | 2) != 10;
+
+=head2 Et logique style C X<&&> X<et logique> X<opérateur, logique, et>
 
 L'opérateur binaire "&&" calcule un ET logique rapide. Cela signifie que si
 l'opérande gauche est faux, l'opérande droit n'est même pas évalué. Le
 contexte scalaire ou de liste se propage vers l'opérande droit si il est
 évalué.
 
-=head2 Ou logique style C
+=head2 Défini-ou logique style C X<//> X<opérateur, logique, défini-ou>
+
+Bien que n'ayant pas d'équivalent direct en C, l'opérateur Perl C<//>
+s'apparente à un ou style C. En fait, c'est exactement la même chose
+que C<||> sauf qu'il ne teste pas la véracité de son opérande gauche
+mais le fait qu'il soit défini. Donc, C<$a // $b> est similaire à
+C<defined($a) || $b> (sauf qu'il retourne la valeur de C<$a> au lieu
+de la valeur de C<defined($a)>) et est exactement équivalent à
+C<defined($a) ? $a : $b>. C'est très pratique pour donner des valeurs
+par défaut à des variables. On peut aussi tester si au moins l'une des
+variables C<$a> ou C<$b> est définie en écrivant C<defined($a // $b)>.
+
+=head2 Ou logique style C X<||> X<ou logique> X<opérateur, logique, ou>
 
 L'opérateur binaire "||" calcule un OU logique rapide. Cela signifie que si
 l'opérande gauche est vrai, l'opérande droit n'est même pas évalué. Le
 contexte scalaire ou de liste se propage vers l'opérande droit si il est
 évalué.
 
-Les opérateurs C<||> et C<&&> diffèrent du C sur un S<point :> au lieu de
-renvoyer 0 ou 1, ils renvoient la dernière valeur évaluée. Donc, un moyen
-raisonnablement portable de trouver le répertoire home (en supposant que ce ne
-soit pas "0") peut S<être :>
+Les opérateurs C<||>, C<//> et C<&&> renvoient la dernière valeur
+évaluée (contrairement aux homologues en C, C<||> et C<&&> qui
+renvoient 0 ou 1). Donc, un moyen raisonnablement portable de trouver
+le répertoire home peut S<être :>
 
-    $home = $ENV{'HOME'} || $ENV{'LOGDIR'} ||
-        (getpwuid($<))[7] || die "You're homeless!\n";
+   $home = $ENV{HOME} // $ENV{LOGDIR} //
+     (getpwuid($<))[7] // die "You're homeless!\n";
 
 En particulier, cela signifie que vous ne devriez pas les utiliser pour
 choisir entre deux agrégats dans une <affectation :>
@@ -364,11 +509,12 @@ choisir entre deux agrégats dans une <affectation :>
     @a = scalar(@b) || @c;      # voila ce que ça signifie
     @a = @b ? @b : @c;          # cela marche très bien par contre
 
-Pour remplacer d'une manière plus lisible l'usage de C<&&> et C<||> pour
-contrôler un flot d'opérations, Perl propose les opérateurs C<and> et C<or>
-(voir plus bas). Le comportement d'évaluation rapide est le même. Par contre,
-la priorité de "and" et "or" est plus basse, vous pouvez donc les utiliser
-après les opérateurs de listes sans ajouter de S<parenthèses :>
+Pour remplacer d'une manière plus lisible l'usage de C<&&>, C<//> et
+C<||> pour contrôler un flot d'opérations, Perl propose les opérateurs
+C<and>, C<err> et C<or> (voir plus bas). Le comportement d'évaluation
+rapide est le même. En revanche, comme la priorité de "and", "err" et
+"or" est plus faible, vous pouvez les utiliser après les opérateurs de
+listes sans ajouter de S<parenthèses :>
 
     unlink "alpha", "beta", "gamma"
             or gripe(), next LINE;
@@ -381,23 +527,27 @@ Avec les opérateurs à la C, vous auriez dû S<l'écrire :>
 En revanche, l'utilisation de "or" lors d'une affectation ne donne pas ce que
 vous voulez; voir plus bas.
 
-=head2 Opérateurs d'intervalle
+=head2 Opérateurs d'intervalle X<opérateur, intervalle> X<intervalle> X<..> X<...>
 
-L'opérateur binaire ".." est l'opérateur d'intervalle qui est en fait deux
-opérateurs totalement différents selon le contexte. Dans un contexte de liste,
-il renvoie un tableau de valeurs commençant à la valeur de son opérande gauche
-et se terminant à la valeur de son opérande droit (par pas de 1). Si la valeur
-de gauche est plus petite que la valeur de droite, il retourne un tableau
-vide. C'est pratique pour écrire des boucles C<foreach (1..10)> et pour des
-opérations de remplacement sur des tableaux. Dans l'implémentation actuelle,
-aucun tableau temporaire n'est généré lorsque l'opérateur d'intervalle est
-utilisé comme expression de boucles C<foreach> mais les vieilles versions de
-Perl peuvent consommer énormément de mémoire lorsque vous écrivez quelque
-chose S<comme :>
+L'opérateur binaire ".." est l'opérateur d'intervalle qui est en fait
+deux opérateurs totalement différents selon le contexte. Dans un
+contexte de liste, il renvoie une liste de valeurs commençant à la
+valeur de son opérande gauche et se terminant à la valeur de son
+opérande droit (par pas de 1). Si la valeur de gauche est plus petite
+que la valeur de droite, il retourne une liste vide. C'est pratique
+pour écrire des boucles C<foreach (1..10)> et pour des opérations de
+remplacement sur des tableaux. Dans l'implémentation actuelle, aucun
+tableau temporaire n'est généré lorsque l'opérateur d'intervalle est
+utilisé comme expression de boucles C<foreach> mais les vieilles
+versions de Perl peuvent consommer énormément de mémoire lorsque vous
+écrivez quelque chose S<comme :>
 
     for (1 .. 1_000_000) {
         # code
     }
+
+L'opérateur d'intervalle fonctionne aussi avec des chaînes de
+caractères, en utilisant l'auto-incrémentation (voir ci-dessous).
 
 Dans un contexte scalaire, ".." renvoie une valeur booléenne. L'opérateur est
 bi-stable comme un interrupteur et simule l'opérateur d'intervalle de ligne
@@ -421,27 +571,68 @@ soit un numéro de séquence (commençant à 1) pour "vrai". Le dernier numéro de
 séquence d'un intervalle est suivi de la chaîne "E0" ce qui ne perturbe pas sa
 valeur numérique mais vous donne quelque chose à chercher si vous voulez
 exclure cette dernière valeur. Vous pouvez exclure la première valeur en
-demandant une valeur supérieure à 1. Si l'un des opérandes de l'opérateur
-intervalle pris dans un contexte scalaire est une expression constante, cette
-opérande est implicitement comparé à la variable C<$.> (le numéro de ligne
-courant). S<Exemples :>
+demandant une valeur supérieure à 1.
+
+Si l'un des opérandes de l'opérateur intervalle pris dans un contexte
+scalaire est une expression constante, alors cet opérande est
+considéré comme vrai si il est égal (C<==>) au numéro de ligne courant
+(la variable C<$.>).
+
+Plus précisément, la comparaison réellement effectuée est C<int(EXPR)
+== int(EXPR)> ce qui importe uniquement si vous utilisez une
+expression non entière. Lorsque C<$.> est utilisé implicitement, comme
+dans expliqué dans la paragraphe précédent, la véritable comparaison
+utilisée est C<int(EXPR) == int($.)>. Plus encore, C<"span" .. "spat">
+ou C<2.18 .. 3.14> dans un contexte scalaire ne font pas ce que vous
+voulez puisque chacun de leurs opérandes est évalué en utilisant sa
+représentation entière.
+
+S<Exemples :>
 
 Comme opérateur S<scalaire :>
 
     if (101 .. 200) { print; }  # affiche la seconde centaine de lignes
+                                # raccourci pour
+                                # if ($. == 101 .. $. == 200) ...
+
     next line if (1 .. /^$/);   # saut des lignes d'en-têtes
+                                # raccourci pour
+                                # ... if ($. == 1 .. /^$/);
+
     s/^/> / if (/^$/ .. eof()); # place le corps comme citation
 
     # analyse d'e-mail
     while (<>) {
         $in_header =   1  .. /^$/;
         $in_body   = /^$/ .. eof();
-        # faire quelque chose avec...
+        if ($in_header) {
+           # ...
+        } else { # in body
+	   # ...
+	}
     } continue {
         close ARGV if eof;      # réinitialisation de $. à chaque fichier
     }
 
-Comme opérateur de S<liste :>
+Voici un exemple illustrant les différences entre les deux opérateurs
+S<d'intervalle :>
+
+    @lines = ("   - Foo",
+              "01 - Bar",
+              "1  - Baz",
+              "   - Quux");
+
+    foreach (@lines) {
+      if (/0/ .. /1/) {
+        print "$_\n";
+      }
+    }
+
+Ce programme n'affiche que la ligne contenant "Bar". En utilisant
+l'opérateur d'intervalle C<...>, il afficherait aussi la ligne
+contenant "Baz".
+
+Et maintenant quelques exemple en tant qu'opérateur de S<liste :>
 
     for (101 .. 200) { print; } # affiche $_ 100 fois
     @foo = @foo[0 .. $#foo];    # un no-op coûteux
@@ -453,7 +644,7 @@ S<écrire :>
 
     @alphabet = ('A' .. 'Z');
 
-pour obtenir toutes les lettres de l'alphabet ou
+pour obtenir toutes les lettres de l'alphabet anglais ou
 
     $hexdigit = (0 .. 9, 'a' .. 'f')[$num & 15];
 
@@ -466,7 +657,12 @@ dans la séquence produite par l'incrémentation magique, la séquence continue
 jusqu'à ce que la prochaine valeur soit plus longue que la valeur finale
 spécifiée.
 
-=head2 L'opérateur conditionnel
+Comme chaque opérande est évalué sous forme entière, C<2.18 .. 3.14>
+retournera deux éléments dans un contexte de liste.
+
+   @list = (2.18 .. 3.14); # identique à @list = (2 .. 3);
+
+=head2 Opérateur conditionnel X<opérateur, conditionnel> X<opérateur, ternaire> X<ternaire> X<?:>
 
 L'opérateur "?:" est l'opérateur conditionnel exactement comme en C. Il
 travaille presque comme un si-alors-sinon. Si l'argument avant le ? est vrai,
@@ -509,7 +705,7 @@ Cela aurait probablement pu être écrit plus S<simplement :>
 
     $a += ($a % 2) ? 10 : 2;
 
-=head2 Opérateurs d'affectation
+=head2 Opérateurs d'affectation X<affectation> X<opérateur, affectation> X<=> X<**=> X<*=> X<&=> X<<< <<= >>> X<&&=> X<-=> X</=> X<|=> X<<< >>= >>> X<||=> X<.=> X<%=> X<^=> X<x=>
 
 "=" est l'opérateur habituel d'affectation.
 
@@ -528,7 +724,7 @@ S<reconnus :>
 
     **=    +=    *=    &=    <<=    &&=
            -=    /=    |=    >>=    ||=
-           .=    %=    ^=
+           .=    %=    ^=           //=
                  x=
 
 Remarque: bien que regroupés par famille, tous ces opérateurs ont la même
@@ -554,7 +750,7 @@ De manière similaire, une affectation vers une liste dans un contexte de liste
 produit la liste des lvalues affectées et dans un contexte scalaire produit le
 nombre d'éléments présents dans l'opérande de droite de l'affectation.
 
-=head2 Opérateur virgule
+=head2 Opérateur virgule X<opérateur, virgule> X<,> X<virgule>
 
 L'opérateur binaire "," est l'opérateur virgule. Dans un contexte scalaire, il
 évalue son opérande gauche et jette le résultat puis il évalue son opérande
@@ -564,11 +760,29 @@ C.
 Dans un contexte de liste, c'est tout simplement le séparateur d'arguments de
 la liste. Il insère ses deux opérandes dans la liste.
 
-Le digramme =E<gt> est un synonyme de l'opérateur virgule. C'est pratique pour
-indiquer que les arguments fonctionnent par paires. Depuis la version 5.001,
-il contraint le mot à sa gauche à être interprété comme une chaîne.
+L'opérateur C<< => >> est un synonyme de la virgule sauf qu'il
+contraint un mot (constitué uniquement de caractères de mots) à sa
+gauche à être interprété comme une chaîne (depuis la version
+5.001). Cela inclut les mots qui, dans un autre contexte, auraient pu
+être considérés comme des constantes ou des appels de fonctions.
 
-=head2 Opérateurs de listes (Rightward)
+  use constant FOO => "quelque chose";
+
+  my %h = ( FOO => 23);
+
+qui est équivalent S<à :>
+
+  my %h = ("FOO", 23);
+
+et I<non> S<à :>
+
+  my %h = ("quelque chose", 23);
+
+Si son argument de gauche n'est pas un mot, il est tout d'abord
+interprété comme une expression puis, ensuite, c'est sa valeur en tant
+que chaîne de caractères qui est utilisée.
+
+=head2 Opérateurs de listes (Rightward) X<opérateur, liste>
 
 Du côté droit d'un opérateur de liste, il a une priorité très basse qui permet
 de maîtriser toutes les expressions présentes séparées par des virgules. Les
@@ -582,19 +796,19 @@ opérateurs de liste sans l'ajout de parenthèses supplémentaires :
 Voir aussi la discussion sur les opérateurs de liste dans L<Termes et
 opérateurs de liste (leftward)>.
 
-=head2 Non (not) logique
+=head2 Non (not) logique X<opérateur, logique, non> X<non>
 
 L'opérateur unaire "not" renvoie la négation logique de l'expression à sa
 droite. Il est équivalent à "!" sauf sa priorité beaucoup plus basse.
 
-=head2 Et (et) logique
+=head2 Et (and) logique X<opérateur, logique, et> X<et>
 
 L'opérateur binaire "and" renvoie la conjonction logique des deux expressions
 qui l'entourent. Il est équivalent à && sauf sa priorité beaucoup plus
-basse. Cela signifie qu'il est rapide: i.e., l'expression de droite est
+basse. Cela signifie qu'il est rapide: l'expression de droite est
 évaluée uniquement si celle de gauche est vraie.
 
-=head2 Ou (or) et ou exclusif (xor) logique
+=head2 Ou (or), ou exclusif (xor) et défini-ou (err) logiques X<opérateur, logique, ou> X<opérateur, logique, or> X<opérateur, logique, ou exclusif> X<opérateur, logique, xor> X<opérateur, logique, défini-ou> X<opérateur, logique, err> X<or> X<xor> X<err> X<ou> X<ou exclusif> X<défini-ou>
 
 L'opérateur binaire "or" renvoie la disjonction logique des deux expressions
 qui l'entourent. Il est équivalent à || sauf sa priorité beaucoup plus
@@ -602,7 +816,7 @@ basse. C'est pratique pour contrôler une suite S<d'opérations :>
 
     print FH $data              or die "Can't write to FH: $!";
 
-Cela signifie qu'il est rapide: i.e., l'expression de droite est évaluée
+Cela signifie qu'il est rapide: l'expression de droite est évaluée
 uniquement si celle de gauche est fausse. À cause de sa priorité, vous devriez
 l'éviter dans les affectations et ne l'utiliser que pour du contrôle
 d'opérations.
@@ -620,10 +834,17 @@ l'affectation soit prioritaire.
 
 Bien sûr, il est toujours possible d'utiliser les parenthèses.
 
+L'opérateur binaire "err" est l'équivalent de C<//> (c'est comme un
+"ou" binaire sauf qu'il teste si son opérande gauche est défini au
+lieu de tester si il est vrai). Il y a deux moyens de mémoriser
+S<"err" :> soit parce que de nombreuses fonctions retourne C<undef> en
+cas d'B<err>eur, soit comme une sorte de correction (C<$a=($b err
+'défaut')>).
+
 L'opérateur binaire "xor" renvoie le ou exclusif des deux expressions qui
 l'entourent. Il ne peut évidemment pas être rapide.
 
-=head2 Opérateurs C manquant en Perl
+=head2 Opérateurs C manquant en Perl X<opérateur, manquant en Perl> X<&> X<*> X<conversion de types> X<(type)>
 
 Voici ce qui existe en C et que Perl n'a S<pas :>
 
@@ -644,7 +865,7 @@ Opérateur de conversion de type (de cast).
 
 =back
 
-=head2 Opérateurs apostrophe et type apostrophe
+=head2 Opérateurs apostrophe et apparentés X<opérateur, apostrophe> X<opérateur, guillemets> X<q> X<qq> X<qx> X<qw> X<m> X<qr> X<s> X<tr> X<'> X<''> X<"> X<""> X<//> X<`> X<``> X<<< << >>> X<escape sequence> X<escape>
 
 Bien qu'habituellement nous pensions aux apostrophes (et autres guillemets)
 pour des valeurs littérales, en Perl, elles fonctionnent comme des opérateurs
@@ -657,12 +878,15 @@ aurez choisie.
      Standard  Générique    Signification       Interpolation
         ''       q{}         Littérale            non
         ""      qq{}         Littérale            oui
-        ``      qx{}          Commande            oui (sauf si délimiteur '')
+        ``      qx{}          Commande            oui*
                 qw{}        Liste de mots         non
-        //       m{}   Reconnaissance de motif    oui (sauf si délimiteur '')
-                qr{}           Motif              oui (sauf si délimiteur '')
-                 s{}{}       Substitution         oui (sauf si délimiteur '')
-                tr{}{}     Translittération       non (voir plus bas)
+        //       m{}   Reconnaissance de motif    oui*
+                qr{}           Motif              oui*
+                 s{}{}       Substitution         oui*
+                tr{}{}     Translittération       non (mais voir plus bas)
+        <<EOF                 here-doc            oui*
+
+      * sauf si les délimiteurs sont de simples apostrophes (').
 
 Les délimiteurs qui ne marchent pas par deux utilisent le même
 caractère au début et à la fin par contre les quatre sortes de parenthèses
@@ -679,21 +903,23 @@ Remarquez par contre que cela ne fonctionne pas toujours. Par S<exemple :>
 
         $s = q{ if($a eq "}") ... }; # Mauvais
 
-est une erreur de syntaxe. Le module C<Text::Balanced> disponible sur CPAN est
+est une erreur de syntaxe. Le module C<Text::Balanced> (disponible sur
+CPAN et intégré à la distribution Perl depuis la version 5.8) est
 capable de gérer cela correctement.
 
-Il peut y avoir des espace entre l'opérateur et le caractère délimiteur sauf
-lorsque C<#> est utilisé. C<q#foo#> est interprété comme la chaîne C<foo>
-alors que C<q #foo#> est l'opérateur C<q> suivi d'un commentaire. Ses
-arguments sont alors pris sur la ligne suivante. Cela permet S<d'écrire :>
+Il peut y avoir des espaces entre l'opérateur et le caractère
+délimiteur sauf lorsque C<#> est utilisé. C<q#foo#> est interprété
+comme la chaîne C<foo> alors que C<q #foo#> est l'opérateur C<q> suivi
+d'un commentaire. Ses arguments sont alors pris sur la ligne
+suivante. Cela permet S<d'écrire :>
 
     s {foo}  # Remplace foo
       {bar}  # par bar.
 
-Pour les constructions qui réalisent une interpolation, les variables
-commençant par "C<$>" ou "C<@>" sont interpolées ainsi que les séquences
-suivantes. Dans une translittération, seules les douze premières séquences
-sont utilisables.
+Le séquences d'échappement suivantes sont disponibles dans les
+constructions qui font de l'interpolation et dans les
+S<translittérations :>
+X<\t> X<\n> X<\r> X<\f> X<\b> X<\a> X<\e> X<\x> X<\0> X<\c> X<\N>
 
     \t          tabulation             (HT, TAB)
     \n          nouvelle ligne         (LF, NL)
@@ -705,33 +931,63 @@ sont utilisables.
     \x1B        caractère hexadécimal  (ESC)
     \x{236a}    caractère hexadécimal long (SMILEY)
     \c[         caractère de contrôle  (ESC)
-    \N{nom}     caractère nommé
+    \N{nom}     caractère Unicode nommé
 
-    \l          converti en minuscule le caractère suivant
-    \u          converti en majuscule le caractère suivant
-    \L          converti en minuscule jusqu'au prochain \E
-    \U          converti en majuscule jusqu'au prochain \E
+S<B<Note> :> la séquence \v (pour une tabulation verticale - VT -
+ASCII 11) qui existe en C et dans d'autres langages n'est pas reconnue
+en Perl.
+
+Les séquences d'échappement suivantes sont disponibles dans les
+constructions qui font de l'interpolation mais pas dans les
+S<translittérations :>
+X<\l> X<\u> X<\L> X<\U> X<\E> X<\Q>
+
+    \l          convertit en minuscule le caractère suivant
+    \u          convertit en majuscule le caractère suivant
+    \L          convertit en minuscule jusqu'au prochain \E
+    \U          convertit en majuscule jusqu'au prochain \E
     \E          fin de modification de casse
     \Q          désactive les méta-caractères de motif jusqu'au prochain \E
 
-Si C<use locale> est actif, la table de majuscules/minuscules utilisée par
-C<\l>, C<\L>, C<\u> et C<\U> est celle du locale courant. Voir
-L<perllocale>. Pour la documentation de C<\N{nom}>, voir L<charnames>.
+Si C<use locale> est actif, la table de conversion
+majuscules/minuscules utilisée par C<\l>, C<\L>, C<\u> et C<\U> est
+celle du locale courant. Voir L<perllocale>. En Unicode (par exemple
+avec C<\N{}> ou avec des caractères larges codés en hexadécimal avec
+une valeur supérieure à 0x100), la table de conversion
+majuscules/minuscules utilisée par C<\l>, C<\L>, C<\u> et C<\U> est
+définie par les conventions Unicode. Pour la documentation de
+C<\N{nom}>, voir L<charnames>.
 
 Tous les systèmes utilisent le C<"\n"> virtuel pour représenter une
-terminaison de ligne appelée "newline" ou "nouvelle ligne". Il n'existe pas de
-caractère physique invariant pour représenter ce caractère "newline". C'est
-une illusion qu'essayent conjointement de maintenir le système d'exploitation,
-les pilotes de périphériques, la bibliothèque C et Perl. Tous les systèmes ne
-lisent pas C<"\r"> comme le CR ASCII ni C<"\n"> comme le LF ASCII. Par
-exemple, sur Mac, ils sont inversés et sur des systèmes sans terminaison de
-ligne, écrire C<"\n"> peut ne produire aucun donnée. En général, utilisez
-C<"\n"> lorsque vous pensez "newline" pour votre système mais utilisez le
-littéral ASCII quand voulez un caractère exact. Par exemple, de nombreux
-protocoles réseaux attendent et préfèrent un CR+LF ((C<"\012\015"> ou
-C<"\cJ\cM">) comme terminaison de ligne. La plupart acceptent juste C<"\012">
-et tolère rarement juste C<"\015">. Si vous prenez l'habitude d'utiliser
-C<"\n"> sur les réseaux, vous aurez des problèmes un jour.
+terminaison de ligne appelée "newline" ou "nouvelle ligne". Il
+n'existe pas de caractère physique invariant pour représenter ce
+caractère "newline". C'est une illusion qu'essayent conjointement de
+maintenir le système d'exploitation, les pilotes de périphériques, la
+bibliothèque C et Perl. Tous les systèmes ne lisent pas C<"\r"> comme
+le CR ASCII ni C<"\n"> comme le LF ASCII. Par exemple, sur Mac, ils
+sont inversés et sur des systèmes sans terminaison de ligne, écrire
+C<"\n"> peut ne produire aucun donnée. En général, utilisez C<"\n">
+lorsque vous pensez "newline" pour votre système mais utilisez le
+littéral ASCII quand voulez un caractère exact. Par exemple, de
+nombreux protocoles réseaux attendent et préfèrent un CR+LF
+((C<"\015\012"> ou C<"\cJ\cM">) comme terminaison de ligne. La plupart
+acceptent un simple C<"\012"> et ne tolèrent que très rarement un
+simple C<"\015">. Si vous prenez l'habitude d'utiliser C<"\n"> sur les
+réseaux, vous aurez des problèmes un jour.
+X<newline> X<saut de ligne> X<fin de ligne> X<eol> X<\n> X<\r> X<\r\n>
+
+Dans les constructions qui font appel à de l'interpolation, les
+variables commençant par "C<$>" ou "C<@>" sont interpolées. Les
+variables utilisant des indices comme dans C<$a[3]> ou
+C<< $href->{key}[0] >> sont aussi interpolées comme le sont les
+tranches de tableaux ou de tables de hachage. Par contre, les appels
+de méthodes comme C<< $obj->meth >> ne le sont pas.
+
+Un tableau (ou une tranche de tableau) est interpolé par la suite de
+valeurs dans l'ordre séparées par la valeur de C<$">, ce qui est
+équivalent à C<join $", @tableau>. Les tableaux dont le nom utilisent
+des caractères spéciaux comme C<@+> ne sont interpolés que si on
+entoure le nom par des accolades C<@{+}>.
 
 Vous ne pouvez pas inclure littéralement les caractères C<$> et C<@> à
 l'intérieur d'une séquence C<\Q>. Tels quels, ils se référeraient à la
@@ -751,7 +1007,7 @@ accents graves (ou backticks) I<NE> sont I<PAS> interpolées à l'intérieur des
 guillemets et les apostrophes n'empêchent pas l'évaluation des variables à
 l'intérieur des guillemets.
 
-=head2 Opérateurs d'expression rationnelle
+=head2 Opérateurs d'expression rationnelle X<opérateur, expression rationnelle>
 
 Nous discuterons ici des opérateurs style apostrophe qui implique une
 reconnaissance de motif ou une action s'y rapportant.
@@ -759,6 +1015,7 @@ reconnaissance de motif ou une action s'y rapportant.
 =over 8
 
 =item ?MOTIF?
+X<?>
 
 C'est la même chose qu'une recherche par C</motif/> sauf qu'elle n'est
 reconnue qu'une seule fois entre chaque appel à l'opérateur reset(). C'est une
@@ -774,10 +1031,14 @@ les motifs C<??> locaux au package courant sont réinitialisés par reset().
         reset if eof;       # réinitialisation de ?? pour le fichier suivant
     }
 
-Cet usage est vaguement désapprouvé et peut être supprimé dans une version
-future de Perl. Peut-être vers l'année 2168.
+Cet usage est plus ou moins désapprouvé et pourrait être supprimé dans
+une version future de Perl. Peut-être vers l'année 2168.
 
 =item m/MOTIF/cgimosx
+
+X<m> X<opérateur, reconnaissance de motif>
+X<expression rationnelle, options>
+X</c> X</i> X</m> X</o> X</s> X</x>
 
 =item /MOTIF/cgimosx
 
@@ -793,7 +1054,7 @@ locale>.
 Les options (ou modificateurs) S<sont :>
 
     c   Ne pas réinitialiser la position de recherche lors d'un échec avec /g.
-    g   Recherche globale, i.e. trouver toutes les occurrences.
+    g   Recherche globale, c.-à-d. trouver toutes les occurrences.
     i   Reconnaissance de motif indépendamment de la casse (majuscules/minuscules).
     m   Traitement de chaîne comme étant multi-lignes.
     o   Compilation du motif uniquement la première fois.
@@ -809,22 +1070,39 @@ C<?MOTIF?> s'applique. Si "'" est le délimiteur alors aucune interpolation
 n'est effectuée sur le MOTIF.
 
 MOTIF peut contenir des variables qui seront interpolées (et le motif
-recompilé) chaque fois que la recherche du motif est effectuée sauf si le
-délimiteur choisi est une apostrophe. (Remarquez que C<$)> et C<$|> ne peuvent
-pas être interpolés puisqu'ils ressemblent à des tests de fin de chaîne.) Si
-vous voulez qu'un motif ne soit compilé qu'une seule fois, ajoutez C</o> après
-le dernier délimiteur. Ceci évite des coûteuses recompilations lors de
-l'exécution et c'est utile lorsque le valeur interpolée ne doit pas changer
-pendant la durée de vie du script. Par contre, ajouter C</o> suppose que vous
-ne changerez pas la valeur des variables présentes dans le motif. Si vous les
-changez, Perl ne s'en apercevra même pas. Voir aussi L<"qr//">.
+recompilé) chaque fois que la recherche du motif est effectuée sauf si
+le délimiteur choisi est une apostrophe. (Remarquez que C<$(>, C<$)>
+et C<$|> ne peuvent pas être interpolés puisqu'ils ressemblent à des
+tests de fin de chaîne.) Si vous voulez qu'un motif ne soit compilé
+qu'une seule fois, ajoutez C</o> après le dernier délimiteur. Ceci
+évite des coûteuses recompilations lors de l'exécution et c'est utile
+lorsque le valeur interpolée ne doit pas changer pendant la durée de
+vie du script. Par contre, ajouter C</o> suppose que vous ne changerez
+pas la valeur des variables présentes dans le motif. Si vous les
+changez, Perl ne s'en apercevra même pas. Voir aussi L<"qr/CHAINE/imosx">.
 
 Si l'évaluation du MOTIF est la chaîne vide, la dernière expression
-rationnelle I<reconnue> est utilisée à la place.
+rationnelle I<reconnue> est utilisée à la place. Dans ce cas, seuls
+les modificateurs C<g> et C<c> du motif vide sont pris en compte - les
+autres modificateurs seront ceux de l'expression rationnelle
+utilisée. Si aucun motif n'a été précédemment reconnu, le motif utilisé
+(silencieusement) sera le motif vide (qui est toujours
+reconnaissable).
+
+Notez qu'il est possible que Perl confonde C<//> (l'expression
+rationnelle vide) et C<//> (l'opérateur défini-ou). Habituellement,
+Perl se débrouille assez bien pour cela mais quelques cas
+pathologiques peuvent se présenter, comme, par exemple, C<$a///>
+(est-ce C<($a) / (//)> ou C<$a // /> ?) ou C<print $fh //> (est-ce
+C<print $fh(//> ou C<print($fh //> ?). Dans tous ces exemples, Perl
+choisira l'opérateur défini-ou. Pour choisir l'expression rationnelle
+vide, il vous suffit d'ajouter des parenthèses ou un espace pour lever
+l'ambiguïté ou encore préfixer votre expression rationnelle vide par
+un C<m> (C<//> devient donc C<m//>).
 
 Si l'option C</g> n'est pas utilisée, dans un contexte de liste, C<m//>
 retourne une liste constituée de tous les sous-motifs reconnus par des
-parenthèses dans le motif, i.e. (C<$1>, C<$2>, C<$3>...). (Remarquez que
+parenthèses dans le motif (c.-à-d. C<$1>, C<$2>, C<$3>...). (Remarquez que
 C<$1>, C<$2>, etc. sont aussi mises à jours ce qui diffère du comportement de
 Perl 4.) Lorsqu'il n'y a pas de parenthèses dans le motif, la valeur retournée
 est la liste C<(1)> en cas de succès. Qu'il y ait ou non de parenthèses, une
@@ -849,7 +1127,7 @@ S<Exemples :>
 
 Ce dernier exemple découpe $foo en trois parties (le deux premiers mots et le
 reste de la ligne) et les affecte à $F1, $F2 et $Etc. La condition est vraie
-si au moins une des variables est affectée, i.e. si le motif est reconnu.
+si au moins une des variables est affectée, c.-à-d. si le motif est reconnu.
 
 Le modificateur C</g> spécifie une recherche globale du motif -- c'est à dire
 la recherche d'autant de correspondances que possible dans la chaîne. Le
@@ -864,17 +1142,20 @@ correspondance et retourne vrai si il y a correspondance et faux si il n'y en
 a plus. La position après la dernière correspondance peut-être lue et modifiée
 par la fonction pos(); voir L<perlfunc/pos>. Normalement, un échec de la
 recherche réinitialise la position de recherche au début de la chaîne sauf si
-vous ajoutez le modificateur C</c> (e.g. C<m//gc>). La modification de la
+vous ajoutez le modificateur C</c> (par ex. C<m//gc>). La modification de la
 chaîne sur laquelle à lieu la recherche réinitialise aussi la position de
 recherche.
 
-Vous pouvez mélanger des reconnaissances C<m//g> avec des C<m/\G.../g> où
-C<\G> est l'assertion de longueur nulle qui est reconnue à la position exacte
-où, si elle existe, s'est arrêtée la précédente recherche C<m//g>. L'assertion
-C<\G> n'est pas acceptable sans le modificateur C</g>. (Dans la version
-courante, en l'absence de C</g>, il se trouve que C<\G> se comporte exactement
-comme C<\A> mais c'est accidentel et cela peut changer dans les versions
-futures.)
+Vous pouvez mélanger des reconnaissances C<m//g> avec des C<m/\G.../g>
+où C<\G> est l'assertion de longueur nulle qui est reconnue à la
+position exacte où, si elle existe, s'est arrêtée la précédente
+recherche C<m//g>. Sans le modificateur C</g>, l'assertion pourra
+encore s'ancrer sur pos(), mais cette reconnaissance n'est évidemment
+essayée qu'une seule fois. L'application de C<\G> sans C</g> sur une
+chaîne de caractères sur laquelle aucune reconnaissance utilisant
+C</g> n'a encore été faite, revient à utiliser l'assertion C<\A> pour
+reconnaître le début de la chaîne. Notez aussi que, actuellement,
+C<\G> ne fonctionne bien que si il est utilisé au tout début du motif.
 
 S<Exemples :>
 
@@ -882,13 +1163,11 @@ S<Exemples :>
     ($one,$five,$fifteen) = (`uptime` =~ /(\d+\.\d+)/g);
 
     # contexte scalaire
-    {
-      local $/ = "";
-      while (defined($paragraph = <>)) {
+    $/ = "";
+    while (defined($paragraph = <>)) {
         while ($paragraph =~ /[a-z]['")]*[.!?]+['")]*\s/g) {
             $sentences++;
         }
-      }
     }
     print "$sentences\n";
 
@@ -902,6 +1181,7 @@ S<Exemples :>
         print "3: '";
         print $1 while /(p)/gc; print "', pos=", pos, "\n";
     }
+    print "Final: '$1', pos=",pos,"\n" if /\G(.)/;
 
 Le dernier exemple devrait S<afficher :>
 
@@ -911,6 +1191,14 @@ Le dernier exemple devrait S<afficher :>
     1: '', pos=7
     2: 'q', pos=8
     3: '', pos=8
+    Final: 'q', pos=8
+
+Remarquez que la reconnaissance finale reconnaît C<q> au lieu de C<p>,
+comme l'aurait fait une reconnaissance sans C<\G>. Notez aussi que
+cette reconnaissance finale ne met pas à jour C<pos> (C<pos> n'est mis
+à jour qu'avec C</g>). Si vous obtenez un C<p> lors de cette
+reconnaissance finale, cela indique que vous utilisez une vieille
+version de Perl (avant 5.6.0).
 
 Une construction idiomatique pratique pour des analyseurs à la C<lex> est
 C</\G.../gc>. Vous pouvez combiner plusieurs expressions rationnelles de ce
@@ -941,6 +1229,7 @@ Voici la sortie (découpée en plusieurs lignes) :
     MiXtE autres. C'est tout !
 
 =item q/CHAINE/
+X<q> X<apostrophe> X<'> X<''>
 
 =item 'CHAINE'
 
@@ -953,6 +1242,7 @@ un autre backslash auquel cas le délimiteur ou le backslash est interpolé.
     $baz = '\n';                # une chaîne de deux caractères
 
 =item qq/CHAINE/
+X<qq> X<guillemets> X<"> X<"">
 
 =item "CHAINE"
 
@@ -964,11 +1254,13 @@ Des guillemets pour une chaîne interpolée.
     $baz = "\n";                # une chaîne d'un caractère
 
 =item qr/CHAINE/imosx
+X<qr> X</i> X</m> X</o> X</s> X</x>
 
-Opérateur "comme-une-expression-regulière". I<CHAINE> est interpolée de la
-même manière que I<MOTIF> dans C<m/MOTIF/>. Si "'" est utilisé comme
-délimiteur, aucune interpolation de variables n'est effectuée. Renvoie une
-expression Perl qui peut être utilisée à la place de l'expression
+Cette opérateur considère I<CHAINE> comme une expression rationnelle
+(et la compile éventuellement). I<CHAINE> est interpolée de la même
+manière que I<MOTIF> dans C<m/MOTIF/>. Si "'" est utilisé comme
+délimiteur, aucune interpolation de variables n'est effectuée. Renvoie
+une expression Perl qui peut être utilisée à la place de l'expression
 C</CHAINE/imosx>.
 
 Par S<exemple :>
@@ -1022,16 +1314,19 @@ CHAINE et pour une description détaillée de la sémantique des expressions
 rationnelles.
 
 =item qx/CHAINE/
+X<qx> X<`> X<``> X<apostrophe inversée>
 
 =item `CHAINE`
 
 Une chaîne qui est (éventuellement) interpolée puis exécutée comme une
-commande système par C</bin/sh> ou équivalent. Les jokers, tubes (pipes) et
-redirections sont pris en compte. L'ensemble de la sortie standard de la
-commande est renvoyé ; la sortie d'erreur n'est pas affectée. Dans un contexte
-scalaire, le résultat est retourné comme une seule chaîne (potentiellement
-multi-lignes). Dans un contexte de liste, le résultat est une liste de lignes
-(selon la définition des lignes donnée par $/ ou $INPUT_RECORD_SEPARATOR).
+commande système par C</bin/sh> ou équivalent. Les jokers, tubes
+(pipes) et redirections sont pris en compte. L'ensemble de la sortie
+standard de la commande est S<renvoyé ;> la sortie d'erreur n'est pas
+affectée. Dans un contexte scalaire, le résultat est retourné comme
+une seule chaîne (potentiellement multi-lignes) ou undef si la
+commande échoue. Dans un contexte de liste, le résultat est une liste
+de lignes (selon la définition des lignes donnée par $/ ou
+$INPUT_RECORD_SEPARATOR) ou la liste vide si la commande échoue.
 
 Puisque les apostrophes inverses (backticks) n'affectent pas la sortie
 d'erreur, il vous faut utiliser la (les) syntaxe(s) de redirection du shell
@@ -1054,11 +1349,11 @@ STDOUT s'afficher S<normalement :>
 
     $output = `cmd 3>&1 1>&2 2>&3 3>&-`;
 
-Pour récupérer STDOUT et STDERR séparément, il est plus simple et sain de les 
-rediriger séparément vers des fichiers qui seront lus lorsque l'exécution de
-la commande sera S<terminée :>
+Pour récupérer STDOUT et STDERR séparément, il est plus simple de les
+rediriger séparément vers des fichiers qui seront lus lorsque
+l'exécution de la commande sera S<terminée :>
 
-    system("program args 1>/tmp/program.stdout 2>/tmp/program.stderr");
+    system("program args 1>program.stdout 2>program.stderr");
 
 L'utilisation de l'apostrophe comme délimiteur protège la commande de
 l'interpolation normalement effectuée par Perl sur les chaînes entre
@@ -1081,7 +1376,7 @@ ne pas être capable de gérer des commandes multi-lignes. Dans ce cas, l'usage
 de passages à la ligne dans la chaîne de commande ne donne pas ce que vous
 voulez. Vous pouvez évaluez plusieurs commandes sur une seule et même ligne et
 les séparant par le caractère de séparation de commandes si votre shell le
-supporte (e.g. C<;> pour la plupart des shells Unix; C<&> sur le C<cmd> shell
+supporte (par ex. C<;> pour la plupart des shells Unix; C<&> sur le C<cmd> shell
 de Windows NT).
 
 Depuis la version v5.6.0, Perl tente de vider les tampons de tous les fichiers
@@ -1105,17 +1400,19 @@ bon moyen de faire ce que vous voulez. Perl a été conçu pour être un "glue
 language"... La seule chose qui compte c'est que vous sachiez ce que vous
 faites.
 
-Voir L<"Les opérateurs d'E/S"> pour des plus amples informations.
+Voir L<"Opérateurs d'E/S"> pour des plus amples informations.
 
 =item qw/CHAINE/
+X<qw> X<apostrophe, liste> X<apostrophe, mots>
 
 Retourne la liste des mots extraits de CHAINE en utilisant les espaces comme
 délimiteurs de mots. On peut le considérer comme équivalent S<à :>
 
     split(' ', q/CHAINE/);
 
-avec comme différence que la liste est générée lors de la compilation. Donc
-<l'expression :>
+avec comme différence que la liste est générée lors de la compilation,
+et que, dans un contexte scalaire, c'est le dernier élément de la
+liste qui est retourné. Donc <l'expression :>
 
     qw(foo bar baz)
 
@@ -1135,6 +1432,10 @@ C<$^W>) produit un message d'avertissement lorsque CHAINE contient le
 caractère "," ou le caractère "#".
 
 =item s/MOTIF/REMPLACEMENT/egimosx
+
+X<substitution> X<remplacement> X<expression rationnelle, remplacement>
+X<expression rationnelle, substitution> X</e> X</g>
+X</i> X</m> X</o> X</s> X</x>
 
 Recherche le motif dans une chaîne puis, s'il est trouvé, le substitue par le
 texte de REMPLACEMENT et retourne finalement le nombre de substitutions
@@ -1159,7 +1460,7 @@ locale>.
 Les options S<sont :>
 
     e   Évaluez la partie droite comme une expression.
-    g   Substitution globale, i.e. toutes les occurrences.
+    g   Substitution globale, c.-à-d. toutes les occurrences.
     i   Motif indépendant de la casse (majuscules/minuscules).
     m   Traitement de chaîne comme étant multi-lignes.
     o   Compilation du motif uniquement la première fois.
@@ -1174,7 +1475,7 @@ C</e> passe outre). Au contraire de Perl 4, Perl 5 considère l'accent grave
 évalué comme une commande. Si le MOTIF est délimité par des caractères
 fonctionnant en paire (comme les parenthèses), le texte de REMPLACEMENT a sa
 propre paire de délimiteurs qui peuvent être ou non des caractères
-fonctionnant par paire, e.g. C<s(foo)(bar)> ou
+fonctionnant par paire, par ex. C<s(foo)(bar)> ou
 C<sE<lt>fooE<gt>/bar/>. L'option C</e> implique que la partie remplacement
 sera interprétée comme une expression Perl à part entière et donc évaluée
 comme telle. Par contre, sa validité syntaxique est évaluée lors de la
@@ -1246,6 +1547,7 @@ occurrences. Voici quelques cas communs :
     1 while s/\t+/' ' x (length($&)*8 - length($`)%8)/e;
 
 =item tr/LISTERECHERCHEE/LISTEREMPLACEMENT/cds
+X<tr> X<y> X<translittération> X</c> X</d> X</s>
 
 =item y/LISTERECHERCHEE/LISTEREMPLACEMENT/cds
 
@@ -1262,8 +1564,15 @@ C<tr/A-J/0-9/> effectue les mêmes translittérations que
 C<tr/ACEGIBDFHJ/0246813579/>. Pour les adeptes de B<sed>, C<y> est fourni
 comme un synonyme de C<tr>. Si la liste recherchée est délimitée par des
 caractères fonctionnant par paire (comme les parenthèses) alors la liste de
-remplacement a ses propres délimiteurs, e.g.  C<tr[A-Z][a-z]> ou
+remplacement a ses propres délimiteurs, par ex.  C<tr[A-Z][a-z]> ou
 C<tr(+\-*/)/ABCD/>.
+
+Notez que C<tr> ne reconnaît pas les classes de caractères des
+expressions rationnelles telles que C<\d> ou C<[:lower:]>. L'opérateur
+C<tr> n'est donc pas équivalent à l'utilitaire tr(1). Si vous devez
+effectuer des translittérations majuscules/minuscules, voyez du côté
+de L<perlfunc/lc> et L<perlfunc/uc>, et, en général, du côté de
+l'opérateur C<s> si vous avez besoin des expressions rationnelles.
 
 Remarquez aussi que le concept d'intervalle de caractères n'est pas vraiment
 portable entre différents codages -- et même dans un même codage, cela peut
@@ -1277,8 +1586,6 @@ Les options (ou S<modificateurs) :>
     c   Complémente la SEARCHLIST.
     d   Efface les caractères trouvés mais non remplacés.
     s   Agrège les caractères de remplacement dupliqués.
-    U   Transcrit vers/depuis UTF-8
-    C   Transcrit vers/depuis des caractères 8-bit (octet).
 
 Si le modificateur C</c> est utilisé, c'est le complément de la liste
 recherchée qui est utilisé. Si le modificateur C</d> est spécifié, tout
@@ -1296,10 +1603,6 @@ nécessaire pour obtenir la même longueur. Si LISTEREMPLACEMENT est vide,
 LISTERECHERCHEE est utilisé à la place. Ce dernier point est très pratique
 pour comptabiliser les occurrences d'une classe de caractères ou pour agréger
 les suites de caractères d'une classe.
-
-Le premier modificateur C</U> ou C</C> s'applique à la partie gauche de la
-transcription. Le second s'applique à la parti droite. Lorsqu'ils sont
-présents, ces modificateurs passent outre l'état utf8 courant.
 
 S<Exemples :>
 
@@ -1321,9 +1624,6 @@ S<Exemples :>
     tr [\200-\377]
        [\000-\177];             # efface le 8ème bit.
 
-    tr/\0-\xFF//CU;             # change Latin-1 to Unicode
-    tr/\0-\x{FF}//UC;           # change Unicode to Latin-1
-
 Si plusieurs caractères de translittération sont donnés pour un caractère,
 seul le premier est utilisé :
 
@@ -1341,9 +1641,107 @@ utiliser des variables, vous devez utiliser S<eval() :>
 
     eval "tr/$oldlist/$newlist/, 1" or die $@;
 
+=item <<EOF
+X<here-doc> X<heredoc> X<here-document> X<<< << >>>
+
+Il existe une syntaxe de saisie de chaînes de caractères sur plusieurs
+lignes basée sur la syntaxe du "here-document" du shell. À la suite
+d'un C<<< << >>>, vous placez une chaîne de terminaison du texte et
+toutes les lignes à partir de celle-ci et jusqu'à cette chaîne de
+terminaison constitueront votre texte. La chaîne de terminaison
+peut-être un simple identificateur (un mot) ou un texte entre
+guillemets ou entre apostrophes. Le choix entre les guillemets ou les
+apostrophes déterminera si l'interpolation sera active ou non, comme
+pour les chaînes de caractères classiques. Un identificateur aura le
+même comportement que si il était entre guillemets (et donc
+l'interpolation sera active). Il ne doit pas y avoir d'espace entre le
+C<<< << >>> et l'identificateur si il n'est pas entre guillemets ou
+entre apostrophes. (Si il y a un espace, il sera considéré comme
+l'identificateur vide, qui est valide, et sera reconnu dès la première
+ligne vide.) Le texte de terminaison doit apparaître tel quel (sans
+guillemets ni apostrophes ni aucun espace autour) en tant que ligne
+finale.
+
+       print <<EOF;
+    The price is $Price.
+    EOF
+
+       print << "EOF"; # Pareil que ci-dessus
+    The price is $Price.
+    EOF
+
+       print << `EOC`; # exécute les commandes
+    echo hi there
+    echo lo there
+    EOC
+
+       print <<"foo", <<"bar"; # vous pouvez les empiler
+    I said foo.
+    foo
+    I said bar.
+    bar
+
+       myfunc(<< "THIS", 23, <<'THAT');
+    Here's a line
+    or two.
+    THIS
+    and here's another.
+    THAT
+
+N'oubliez pas de mettre un point-virgule à la fin de votre instruction
+sinon Perl pourrait croire que vous essayez de faire ce qui S<suit :>
+
+       print <<ABC
+    179231
+    ABC
+       + 20;
+
+Si vous souhaitez que vos here-docs soient indentés comme le reste de
+votre code, vous devrez supprimer vous-même les espaces
+supplémentaires en début de S<ligne :>
+
+    ($quote = <<'FINIS') =~ s/^\s+//gm;
+       The Road goes ever on and on,
+       down from the door where it began.
+    FINIS
+
+Si vous utilisez un here-doc à l'intérieur d'une construction
+utilisant des délimiteurs, comme C<s///eg>, votre texte doit commencer
+après le délimiteur final. Donc, n'écrivez S<pas :>
+
+    s/this/<<E . 'that'
+    the other
+    E
+     . 'more '/eg;
+
+mais S<écrivez :>
+
+    s/this/<<E . 'that'
+     . 'more '/eg;
+    the other
+    E
+
+Si votre chaîne de terminaison est la toute dernière ligne de votre
+programme, soyez sûr qu'elle se termine par un saut de ligne sinon
+Perl produira l'avertissement S<suivant :> B<Can't find string
+terminator "END" anywhere before EOF...>.
+
+De plus, les règles d'interpolation classiques des chaînes de
+caractères (comme C<q{}>, C<qq{}> et autres) ne sont pas applicables à
+la chaîne de terminaison elle-même sauf celle permettant d'insérer le
+délimiteur lui-même.
+
+    print << "abc\"def";
+    testing...
+    abc"def
+
+Pour finir, la chaîne de terminaison ne peut pas être sur plusieurs
+lignes. En d'autres termes, ça ne peut être qu'une chaîne
+littérale. Respectez cela et tout ira bien.
+
 =back
 
-=head2 Les détails sordides de l'interprétation des chaînes
+=head2 Les détails sordides de l'interprétation des chaînes X<interprétation des chaînes, détails sordides>
 
 Face à quelque chose qui pourrait avoir différentes interprétations, Perl
 utilise le principe du B<FCQJP> (qui signifie Fait Ce Que Je Pense) pour
@@ -1373,7 +1771,7 @@ successivement une par une. Selon la construction, Perl effectue ou non
 certaines passes (de une à cinq) mais elles sont toujours appliquées dans le
 même ordre.
 
-=over
+=over 4
 
 =item Trouver la fin
 
@@ -1382,11 +1780,12 @@ la suite de caractères C<"\nEOF\n"> d'une construction C<E<lt>E<lt>EOF>, le
 C</> qui termine une construction C<qq/>, le C<]> qui termine une construction
 C<qq[> ou le C<E<gt>> qui termine un fileglob commencé par C<E<lt>>.
 
-Lors de la recherche d'un caractère délimiteur non appairé comme C</>, les
-combinaisons comme C<\\> et C<\/> sont sautées. Lors de la recherche d'un
-délimiteur appairé comme C<]>, les combinaisons C<\\>, C<\]> et C<\[> sont
-sautées ainsi que les constructions imbriquées C<[> C<]>. Lors de la recherche
-d'une suite de caractères, rien n'est omis.
+Lors de la recherche d'un caractère délimiteur non appairé comme C</>,
+les combinaisons comme C<\\> et C<\/> sont sautées. Lors de la
+recherche d'un délimiteur appairé comme C<]>, les combinaisons C<\\>,
+C<\]> et C<\[> sont sautées ainsi que les constructions imbriquées
+C<[> C<]>. Lors de la recherche d'un délimiteur constitué d'une suite
+de caractères, rien n'est omis.
 
 Pour les constructions en trois parties (C<s///>, C<y///> et C<tr///>), la
 recherche est répétée une fois supplémentaire.
@@ -1402,11 +1801,18 @@ ou :
       bar       #  Ce n'est PAS un commentaire, ce slash / termine m// !
      /x
 
-ne constituent donc pas des constructions légales. L'expression se termine au
-premier C<"> ou C</> et le reste apparaît comme une erreur de
-syntaxe. Remarquez que puisque le slash qui termine C<m//> est suivi pas un
-C<ESPACE>, ce n'est pas une constructions C<m//x> et donc C<#> est interprété
-comme un C<#> littéral.
+ne constituent donc pas des constructions légales. L'expression se
+termine au premier C<"> ou C</> et le reste apparaît comme une erreur
+de syntaxe. Remarquez que puisque le slash qui termine C<m//> est
+suivi pas un C<ESPACE>, ce n'est pas une constructions C<m//x> mais
+bien un constructions C<m//> sans le modificateur C</x>. Donc C<#> est
+interprété comme un C<#> littéral.
+
+Notez aussi que rien n'est fait pour détecter une construction du type
+C<\c\> durant cette recherche. Donc le second C<\> dans C<qq/\c\/>
+sera vu comme le début de C<\/> et le C</> qui suit ne sera pas
+reconnu comme délimiteur. En remplacement, vous pouvez utiliser
+C<\034> ou C<\x1c> à la fin des constructions délimitées.
 
 =item Suppression des barres obliques inverses (backslash) précédents les
 délimiteurs
@@ -1423,11 +1829,12 @@ Remarquez que la combinaison C<\\> est laissée telle quelle.
 n'est utilisée.
 
 =item Interpolation
+X<interpolation>
 
 L'étape suivante est l'interpolation appliquée au texte isolé de ses
 délimiteurs. Il y a quatre cas différents.
 
-=over
+=over 4
 
 =item C<E<lt>E<lt>'EOF'>, C<m''>, C<s'''>, C<tr///>, C<y///>
 
@@ -1525,11 +1932,12 @@ alphanumérique comme S<dans :>
 
    m m ^ a \s* b mmx;
 
-Dans l'expression rationnelle ci-dessus qui est volontairement obscure pour
-l'exemple, le délimiteur est C<m>, le modificateur est C<mx> et après la
-suppression des backslash, l'expression est la même que C<m/ ^ a s* b /mx>. Il
-y a de nombreuses raisons de vous encourager à ne choisir que des caractères
-non alphanumériques et non blancs comme séparateur.
+Dans l'expression rationnelle ci-dessus qui est volontairement obscure
+pour l'exemple, le délimiteur est C<m>, le modificateur est C<mx> et
+après la suppression des backslash, l'expression est la même que
+C<m/ ^ a \s* b /mx>. Il y a de nombreuses raisons de vous encourager à
+ne choisir que des caractères non alphanumériques et non blancs comme
+séparateur.
 
 =back
 
@@ -1537,6 +1945,7 @@ Cette étape est la dernière pour toutes les constructions sauf pour les
 expressions rationnelles qui sont traitées comme décrit ci-après.
 
 =item Interpolation des expressions rationnelles
+X<expression rationnelle, interpolation>
 
 Toutes les étapes précédentes sont effectuées lors de la compilation du code
 Perl alors que celle que nous décrivons ici l'est a priori lors de l'exécution
@@ -1577,6 +1986,7 @@ de la directive C<use L<re>> et/ou l'option Perl B<-Dr> dans
 L<perlrun/"Options de Ligne de Commande">.
 
 =item Optimisation des expressions rationnelles
+X<expression rationnelle, optimisation>
 
 Cette étape n'est citée que dans un souci de complétude. Puisque elle ne
 change en rien la sémantique, les détails de cette étape ne sont pas
@@ -1588,7 +1998,7 @@ C</^/m>.
 
 =back
 
-=head2 Les opérateurs d'E/S
+=head2 Opérateurs d'E/S X<opérateur, E/S> X<opérateur, entrée/sortie> X<I/O> X<E/S> X<while> X<filehandle> X<descripteur de fichier> X<< <> >> X<@ARGV>
 
 Il y a plusieurs opérateurs d'E/S (Entrée/Sortie) que vous devez
 connaître.
@@ -1612,11 +2022,12 @@ protéger en le préfixant par un backslash (barre oblique inversée). La forme
 générale des apostrophes inversées est C<qx//>. (Puisque les apostrophes
 inversées impliquent toujours un passage par l'interprétation du shell, voir
 L<perlsec> pour tout ce qui concerne la sécurité.)
+X<qx> X<`> X<``> X<apostrophe inverse> X<accent grave> X<glob>
 
 Dans un contexte scalaire, évaluer un filehandle entre supérieur/inférieur
 produit le ligne suivante de ce fichier (saut à la ligne inclus si il y a
 lieu) ou C<undef> à la fin du fichier. Lorsque C<$/> a pour valeur C<undef>
-(i.e. le mode I<file slurp>) et que le fichier est vide, C<''> est retourné
+(c.-à-d. le mode I<file slurp>) et que le fichier est vide, C<''> est retourné
 lors de la première lecture puis ensuite C<undef>.
 
 Normalement vous devez affecter cette valeur à une variable mais il y a un cas
@@ -1662,6 +2073,7 @@ C<stdin>, C<stdout>, et C<stderr> fonctionnent aussi exceptés dans les
 packages où ils sont interprétés comme des identifiants locaux.) Des
 filehandles supplémentaires peuvent être créés par la fonction open(). Voir
 L<perlopentut> et L<perlfunc/open> pour plus de détails.
+X<stdin> X<stdout> X<stderr>
 
 Si E<lt>FILEHANDLEE<gt> est utilisé dans un contexte de liste, une liste
 constituée de toutes les lignes est retournée avec une ligne par élément de la
@@ -1737,24 +2149,27 @@ fois. Si vous l'appelez encore une fois après, il supposera que vous voulez
 traiter une nouvelle liste @ARGV et, si vous n'avez pas rempli @ARGV, il
 traitera l'entrée STDIN.
 
-Si la chaîne entre supérieur/inférieur est une référence à une variable
-scalaire (e.g. E<lt>$fooE<gt>) alors cette variable doit contenir le nom du
-filehandle à utiliser comme entrée ou son typeglob ou une référence vers un
-typeglob. Par S<exemple :>
+Si la chaîne entre supérieur/inférieur est une simple variable
+scalaire (par ex. E<lt>$fooE<gt>) alors cette variable doit contenir le
+nom du filehandle à utiliser comme entrée ou son typeglob ou une
+référence vers un typeglob. Par S<exemple :>
 
     $fh = \*STDIN;
     $line = <$fh>;
 
-Si ce qui est entre supérieur/inférieur n'est ni un filehandle, ni une simple
-variable scalaire contenant un nom de filehandle, un typeglob ou une référence
-à un typeglob, il est alors interprété comme un motif de nom de fichier à
-appliquer et ce qui est retourné est soit la liste de tous les noms de
-fichiers ou juste le nom suivant dans la liste selon le contexte. La
-distinction n'est faite que par la syntaxe. Cela signifie que C<E<lt>$xE<gt>>
-est toujours la lecture d'une ligne à partir d'un handle indirect mais que
-C<E<lt>$hash{key}E<gt>> est toujours un motif de nom de fichiers. Tout cela
-parce que $x est une simple variable scalaire alors que C<$hash{key}> ne l'est
-pas -- c'est un élément d'une table de hachage.
+Si ce qui est entre supérieur/inférieur n'est ni un filehandle, ni une
+simple variable scalaire contenant un nom de filehandle, un typeglob
+ou une référence à un typeglob, il est alors interprété comme un motif
+de nom de fichier à appliquer et ce qui est retourné est soit la liste
+de tous les noms de fichiers ou juste le nom suivant dans la liste
+selon le contexte. La distinction n'est faite que par la syntaxe. Cela
+signifie que C<E<lt>$xE<gt>> est toujours la lecture d'une ligne à
+partir d'un handle indirect mais que C<E<lt>$hash{key}E<gt>> est
+toujours un motif de nom de fichiers. Tout cela parce que $x est une
+simple variable scalaire alors que C<$hash{key}> ne l'est pas -- c'est
+un élément d'une table de hachage. Même C<< <$x > >> (notez l'espace
+supplémentaire) sera traité comme C<glob("$x ")> et non comme
+C<readline($x)>.
 
 Comme pour les chaînes entre guillemets, un niveau d'interprétation est
 appliqué au préalable mais vous ne pouvez pas dire C<E<lt>$fooE<gt>> parce que
@@ -1774,7 +2189,7 @@ est équivalent S<à :>
 
     open(FOO, "echo *.c | tr -s ' \t\r\f' '\\012\\012\\012\\012'|");
     while (<FOO>) {
-        chop;
+        chomp;
         chmod 0644, $_;
     }
 
@@ -1792,7 +2207,7 @@ scalaire, par contre, l'opérateur retourne la valeur suivante à chaque fois
 qu'il est appelé ou la valeur C<undef> à la fin. Comme pour les filehandles un
 C<defined> automatique est généré lorsque l'opérateur est utilisé comme test
 d'un C<while> ou d'un C<for> - car sinon certains noms de fichier légaux
-(e.g. un fichier nommé F<0>) risquent de terminer la boucle. Encore une fois,
+(par ex. un fichier nommé F<0>) risquent de terminer la boucle. Encore une fois,
 C<undef> n'est retourné qu'une seule fois. Donc si vous n'attendez qu'une
 seule valeur, il vaut mieux S<écrire :>
 
@@ -1811,7 +2226,7 @@ confondu avec la notation des filehandles indirects.
     @files = glob("$dir/*.[ch]");
     @files = glob($files[$i]);
 
-=head2 Traitement des constantes
+=head2 Traitement des constantes X<constante, traitement>
 
 Comme en C, Perl évalue un certain nombre d'expressions lors de la compilation
 lorsqu'il peut déterminer que tous les arguments d'un opérateur sont statiques
@@ -1833,7 +2248,16 @@ S<dire :>
 le compilateur pré-calculera la valeur représentée par l'expression et
 l'interpréteur n'aura plus à le faire.
 
-=head2 Opérateurs bit à bit sur les chaînes
+=head2 No-ops (opération vide) X<no-op> X<nop>
+
+Perl n'a pas officiellement d'opérateur no-op (une opération vide)
+mais les constantes C<0> et C<1> sont des cas spéciaux évitant de
+produire un avertissement si elles sont utilisées dans un contexte
+vide si bien que vous pouvez S<écrire :>
+
+  1 while foo();
+
+=head2 Opérateurs bit à bit sur les chaînes X<opérateur, bit à bit, sur les chaînes>
 
 Les chaînes de bits de longueur arbitraire peuvent être manipulées par les
 opérateurs bit à bit (C<~ | & ^>).
@@ -1842,7 +2266,7 @@ Si les opérandes d'un opérateur bit à bit sont des chaînes de longueurs
 différentes, les opérateurs B<|> et B<^> agiront comme si l'opérande le plus
 court était complété par des bits à zéro à droite alors que l'opérateur B<&>
 agira comme si l'opérande le plus long était tronqué à la longueur du plus
-court. Notez que la granularité pour de telles extensions ou troncations est
+court. Notez que la granularité pour de telles extensions ou troncatures est
 d'un ou plusieurs octets.
 
     # Exemples ASCII
@@ -1857,8 +2281,8 @@ implique une opération bit à bit B<numérique>. Vous pouvez explicitement
 préciser le type d'opération que vous attendez en utilisant C<""> ou C<0+>
 comme dans les exemples S<ci-dessous :>
 
-    $foo =  150  |  105 ;       # produit 255  (0x96 | 0x69 vaut 0xFF)
-    $foo = '150' |  105 ;       # produit 255
+    $foo =  150  |  105;        # produit 255  (0x96 | 0x69 vaut 0xFF)
+    $foo = '150' |  105;        # produit 255
     $foo =  150  | '105';       # produit 255
     $foo = '150' | '105';       # produit la chaîne '155' (si en ASCII)
 
@@ -1868,7 +2292,7 @@ comme dans les exemples S<ci-dessous :>
 Voir L<perlfunc/vec> pour savoir comment manipuler des bits individuellement
 dans un vecteur de bits.
 
-=head2 Arithmétique entière
+=head2 Arithmétique entière X<entier>
 
 Par défaut Perl suppose qu'il doit effectuer la plupart des calculs
 arithmétiques en virgule flottante. Mais en S<disant :>
@@ -1895,10 +2319,10 @@ sont interprétés comme des entiers signés. Par exemple, C<~0> est
 habituellement évalué comme un grande valeur entière. Par contre, C<use
 integer; ~0> donne -1 sur des machines à complément à deux.
 
-=head2 Arithmétique en virgule flottante
+=head2 Arithmétique en virgule flottante X<virgule flottante> X<réel>
 
 Bien que C<use integer> propose une arithmétique uniquement entière, il n'y a
-aucun moyen similaire d'imposer des arrondis ou des troncations à un certain
+aucun moyen similaire d'imposer des arrondis ou des troncatures à un certain
 nombre de décimales. Pour arrondir à un nombre de décimales précis, la méthode
 la plus simple est d'utiliser sprintf() ou printf().
 
@@ -1936,7 +2360,7 @@ cas, il peut être plus sûr de ne pas faire confiance aux différents systèmes
 d'arrondi proposés par Perl mais plutôt d'implémenter vous-mêmes la fonction
 d'arrondi dont vous avez besoin.
 
-=head2 Les grands nombres
+=head2 Les grands nombres X<nombre, précision arbitraire>
 
 Les modules standard Math::BigInt et Math::BigFloat fournissent des variables
 arithmétiques en précision infinie et redéfinissent les opérateurs
@@ -1950,22 +2374,40 @@ précision limitée.
 
     # affiche +15241578780673678515622620750190521
 
-Les modules non standard SSLeay::BN et Math::Pari founissent des
-fonctionnalités équivalentes (et même supérieures) avec de meilleures
-performances.
+Il existe plusieurs modules vous permettant d'effectuer vos calculs
+avec une précision arbitraire ou illimitée (limitée uniquement par le
+temps de calcul et la mémoire disponible). Il existe aussi des modules
+non standard qui fournissent des implémentations plus rapides passant
+par des bibliothèques C externes.
+
+En voici une courte liste S<non-exhaustive :>
+
+   Math::Fraction          grand rationnels exacts comme 9973 / 12967
+   Math::String            traite les chaînes comme des nombres
+   Math::FixedPrecision    calcul avec précision arbitraire
+   Math::Currency          pour les calculs financiers
+   Bit::Vector             manipulation rapide de vecteurs de bits (en C)
+   Math::BigIntFast        Extension de Bit::Vector pour les grands nombres
+   Math::Pari              donne accès à la bibliothèque C Pari
+   Math::BigInteger        utilise une bibliothèque C externe
+   Math::Cephes            utilise la bibliothèque C Cephes (pas de grands nombres)
+   Math::Cephes::Fraction  rationnels via la bibliothèque Cephes
+   Math::GMP               encore une autre bibliothèque C externe
+
+Il ne vous reste plus qu'à choisir.
 
 =head1 TRADUCTION
 
 =head2 Version
 
-Cette traduction française correspond à la version anglaise distribuée avec
-perl 5.6.0.  Pour en savoir plus concernant ces traductions, consultez
-L<http://perl.enstimac.fr/>.
+Cette traduction française correspond à la version anglaise distribuée
+avec perl 5.8.8.  Pour en savoir plus concernant ces traductions,
+consultez L<http://perl.enstimac.fr/>.
 
 =head2 Traducteur
 
-Traduction initiale et mise à jour <v5.6.0 :> Paul Gaborit
-<Paul.Gaborit @ enstimac.fr>.
+Traduction initiale et mise à jour vers S<5.8.8 :> Paul Gaborit
+<Paul DOT Gaborit AT enstimac DOT fr>.
 
 =head2 Relecture
 

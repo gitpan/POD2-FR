@@ -207,10 +207,11 @@ Est-ce la même S<chose ?> Eh bien, peut-être que oui, peut-être que
 non. La différence subtile est que lorsque vous affectez quelque chose
 entre crochets, vous êtes sûr que ce sera toujours une nouvelle
 référence contenant une nouvelle I<copie> des données. Ça ne se
-passera pas forcément comme ça avec le déréférencement C<@{$AoA[$i]}}>
-du côté gauche de l'affectation. Tout dépend si C<$AoA[$i]> était pour
-commencer indéfini, ou s'il contenait déjà une référence. Si vous
-aviez déjà peuplé @AoA avec des références, comme dans
+passera pas forcément comme ça avec le déréférencement de
+C<@{$AoA[$i]}> du côté gauche de l'affectation. Tout dépend si
+C<$AoA[$i]> était pour commencer indéfini, ou s'il contenait déjà une
+référence. Si vous aviez déjà peuplé @AoA avec des références, comme
+dans
 
     $AoA[3] = \@another_array;
 
@@ -856,7 +857,7 @@ Wed Oct 23 04:57:50 MET DST 1996
 =head2 Version
 
 Cette traduction française correspond à la version anglaise distribuée avec
-perl 5.8.8.  Pour en savoir plus concernant ces traductions, consultez
+perl 5.10.0.  Pour en savoir plus concernant ces traductions, consultez
 L<http://perl.enstimac.fr/>.
 
 =head2 Traducteur

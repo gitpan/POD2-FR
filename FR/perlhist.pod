@@ -390,9 +390,22 @@ le pumpkineer [Jeu de mot avec "puppeteer", "marionnettiste", NDT]
           5.8.5-RC1     2004-Jul-06
           5.8.5-RC2     2004-Jul-08
           5.8.5         2004-Jul-19
+          5.8.6-RC1     2004-Nov-11
+          5.8.6         2004-Nov-27
+          5.8.7-RC1     2005-May-18
+          5.8.7         2005-May-30
+          5.8.8-RC1     2006-Jan-20
+          5.8.8         2006-Jan-31
 
  Hugo     5.9.0         2003-Oct-27
  Rafael   5.9.1         2004-Mar-16
+          5.9.2         2005-Apr-01
+          5.9.3         2006-Jan-28
+          5.9.4         2006-Aug-15
+          5.9.5         2007-Jul-07
+          5.10.0-RC1    2007-Nov-17
+          5.10.0-RC2    2007-Nov-25
+          5.10.0        2007-Dec-18
 
 =head2 TAILLES DE VERSIONS CHOISIES
 
@@ -437,7 +450,7 @@ colones "core".."doc" sont expliquées ci-dessous.
  5.004_73       1874  76   1467 152    762 102    506 196   1883  61
  5.004_75       1877  76   1467 152    770 103    508 196   1896  62
  5.005          1896  76   1469 152    795 103    509 197   1945  63
- 5.005_03       1936  77   1541 153    813 104    551 201   2176  72       
+ 5.005_03       1936  77   1541 153    813 104    551 201   2176  72
  5.005_50       1969  78   1842 301    795 103    514 198   1948  63
  5.005_53       1999  79   1885 303    806 104    602 224   2002  67
  5.005_56       2086  79   1970 307    866 113    672 238   2221  75
@@ -625,14 +638,14 @@ D. Smith ont envoyé des corrections et des additions.
 
 =head2 Version
 
-Cette traduction française correspond à la version anglaise distribuée avec
-perl 5.8.5.  Pour en savoir plus concernant ces traductions, consultez
-L<http://perl.enstimac.fr/>.
+Cette traduction française correspond à la version anglaise distribuée
+avec perl 5.10.0.  Pour en savoir plus concernant ces traductions,
+consultez L<http://perl.enstimac.fr/>.
 
 =head2 Traducteur
 
-Roland Trique <F<roland.trique@free.fr>>. Maj 5.8.5 Paul Gaborit (Paul.Gaborit
-@ enstimac.fr).
+Roland Trique <F<roland.trique@free.fr>>.
+Maj vers 5.8.5, 5.8.8 puis S<5.10.0 :> Paul Gaborit (Paul.Gaborit @ enstimac.fr).
 
 =head2 Relecture
 

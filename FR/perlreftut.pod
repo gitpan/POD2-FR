@@ -525,12 +525,12 @@ de bugs.
 =back
 
 Vous pourriez préférer continuer avec L<perllol> au lieu de
-L<perlref> ;  il y est traité des listes de listes et des tableaux
-multidimensionnels en détail. Après cela, vous devriez avancer vers
-L<perldsc> ; c'est un livre de recettes pour les structures de
-données (I<Data Structure Cookbook>) qui montre les recettes pour
-utiliser et imprimer les tableaux de tables de hachage, les tables de
-hachage de tableaux, et les autres sortes de données.
+L<perlref>E<nbsp>: il y est traité des listes de listes et des
+tableaux multidimensionnels en détail. Après cela, vous devriez
+avancer vers L<perldsc>E<nbsp>: c'est un livre de recettes pour les
+structures de données (I<Data Structure Cookbook>) qui montre les
+recettes pour utiliser et imprimer les tableaux de tables de hachage,
+les tables de hachage de tableaux, et les autres sortes de données.
 
 =head1 Résumé
 
@@ -584,7 +584,7 @@ n'est pas requis.
 =head2 Version
 
 Cette traduction française correspond à la version anglaise distribuée avec
-perl 5.8.8.  Pour en savoir plus concernant ces traductions, consultez
+perl 5.10.0.  Pour en savoir plus concernant ces traductions, consultez
 L<http://perl.enstimac.fr/>.
 
 =head2 Traducteur

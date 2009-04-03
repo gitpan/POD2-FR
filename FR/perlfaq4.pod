@@ -2,7 +2,7 @@
 
 =head1 NAME/NOM
 
-perlfaq4 - Manipulation de données ($Revision: 1.1 $, $Date: 2006/09/26 08:08:41 $)
+perlfaq4 - Manipulation de données
 
 =head1 DESCRIPTION
 

@@ -241,11 +241,13 @@ aE<nbsp>» et non «E<nbsp>ice-uhE<nbsp>») déclare que C<Boeuf> est un
 bien un tableau ce qui permet, en de rares occasions, d'avoir plusieurs
 parents capables de fournir les méthodes manquantes.
 
-Si C<Animal> a lui aussi un tableau C<@ISA>, alors il est utilisé aussi. La
-recherche est récursive, en profondeur d'abord et de gauche à droite dans
-chaque C<@ISA>. Classiquement, chaque C<@ISA> ne contient qu'un seul élément
-(des éléments multiples impliquent un héritage multiple et donc de multiples
-casse-tête) ce qui définit un bel arbre d'héritage.
+Si C<Animal> a lui aussi un tableau C<@ISA>, alors il est utilisé
+aussi. Par défaut, la recherche est récursive, en profondeur d'abord
+et de gauche à droite dans chaque C<@ISA> (pour changer ce
+comportement, voir L<mro>). Classiquement, chaque C<@ISA> ne contient
+qu'un seul élément (des éléments multiples impliquent un héritage
+multiple et donc de multiples casse-tête) ce qui définit un bel arbre
+d'héritage.
 
 Lorsqu'on active C<use strict>, on obtient un avertissement concernant C<@ISA>
 puisque c'est une variable dont le nom ne contient pas explicitement un nom de
@@ -620,12 +622,13 @@ scalaire en tant que chaîne et nous obtenons ce que nous venons de voir.
 
 =head2 Concevoir une méthode qui marche aussi bien avec des instances qu'avec des classes
 
-Tout ce dont nous avons besoin c'est de détecter si l'appel se fait via une
-classe ou via une instance. Le moyen le plus simple est d'utiliser l'opérateur
-C<ref>. Il retourne une chaîne (le nom de la classe) lorsqu'il est appliqué
-sur une référence consacrée et C<undef> lorsqu'il est appliqué à une chaîne
-(comme un nom de classe). Modifions donc la méthode C<nom> pour prendre cela
-en compteE<nbsp>:
+Tout ce dont nous avons besoin c'est de détecter si l'appel se fait
+via une classe ou via une instance. Le moyen le plus simple est
+d'utiliser l'opérateur C<ref>. Il retourne une chaîne (le nom de la
+classe) lorsqu'il est appliqué sur une référence consacrée et une
+chaîne vide lorsqu'il est appliqué à une chaîne (comme un nom de
+classe). Modifions donc la méthode C<nom> pour prendre cela en
+compteE<nbsp>:
 
   sub nom {
     my $classouref = shift;
@@ -841,7 +844,7 @@ appearing in I<Linux Magazine> and used with permission.
 =head2 Version
 
 Cette traduction française correspond à la version anglaise distribuée avec
-perl 5.8.8.  Pour en savoir plus concernant ces traductions, consultez
+perl 5.10.0.  Pour en savoir plus concernant ces traductions, consultez
 L<http://perl.enstimac.fr/>.
 
 =head2 Traducteur

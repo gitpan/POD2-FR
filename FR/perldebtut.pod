@@ -426,8 +426,8 @@ et perlreftut.
 
 =head1 Pas à pas dans le code
 
-Voici un simple programme qui converti les degrés Fahrenheit en Celsius (et
-vice-versa). Ce programme présente aussi un problème.
+Voici un simple programme qui convertit les degrés Fahrenheit en
+Celsius (et vice-versa). Ce programme présente aussi un problème.
 
         #!/usr/bin/perl -w
         use strict;
@@ -749,7 +749,7 @@ Peter Scott <Peter@PSDT.com>
 =head2 Version
 
 Cette traduction française correspond à la version anglaise distribuée avec
-perl 5.8.8.  Pour en savoir plus concernant ces traductions, consultez
+perl 5.10.0.  Pour en savoir plus concernant ces traductions, consultez
 L<http://perl.enstimac.fr/>.
 
 =head2 Traducteur

@@ -1034,18 +1034,21 @@ nouveaux champs.
 
 =head2 Héritage multiple
 
-Bon, au risque d'ennuyer les gourous OO et de perturber les débutants, il est
-temps d'avouer que le système objet de Perl propose la notion très
-controversée d'héritage multiple (ou HM pour faire court). Cela signifie qu'au
-lieu d'hériter d'une classe qui elle-même peut hériter d'une autre classe et
-ainsi de suite, vous pouvez hériter directement de plusieurs classes
-parentes. Il est vrai que le HM peut rendre les choses confuses, même si en
-Perl cela l'est un peu moins qu'avec des langages OO douteux comme le C++.
+Bon, au risque d'ennuyer les gourous OO et de perturber les débutants,
+il est temps d'avouer que le système objet de Perl propose la notion
+très controversée d'héritage multiple (ou HM pour faire court). Cela
+signifie qu'au lieu d'hériter d'une classe qui elle-même peut hériter
+d'une autre classe et ainsi de suite, vous pouvez hériter directement
+de plusieurs classes parentes. Il est vrai que le HM peut rendre les
+choses confuses, même si en Perl cela l'est un peu moins qu'avec des
+langages OO douteux comme le C++.
 
-La manière dont cela fonctionne est vraiment très simpleE<nbsp>: il suffit de mettre
-plus d'un nom de paquetage dans le tableau @ISA. Lorsque Perl cherche une
-méthode pour votre objet, il regarde dans chacun de ces paquetages dans
-l'ordre. C'est une recherche récursive en profondeur d'abord. Supposons un
+La manière dont cela fonctionne est vraiment très simpleE<nbsp>: il
+suffit de mettre plus d'un nom de paquetage dans le tableau
+@ISA. Lorsque Perl cherche une méthode pour votre objet, il regarde
+dans chacun de ces paquetages dans l'ordre. C'est une recherche
+récursive en profondeur d'abord (par défautE<nbsp>; voir L<mro> pour
+utiliser d'autres ordres de recherche de méthodes). Supposons un
 ensemble de tableaux @ISA commeE<nbsp>:
 
     @First::ISA    = qw( Alpha );
@@ -1057,14 +1060,15 @@ Si vous avez un objet de la classe ThirdE<nbsp>:
     my $ob = Third->new();
     $ob->spin();
 
-Comment allons-nous trouver la méthode find() (ou une méthode new()) ? Puisque 
-la recherche s'effectue en profondeur d'abord, les classes seront explorées
-dans l'ordre suivantE<nbsp>: Third, First, Alpha, Second et enfin Beta.
+Comment allons-nous trouver la méthode find() (ou une méthode new()) ?
+Puisque la recherche s'effectue en profondeur d'abord, les classes
+seront explorées dans l'ordre suivantE<nbsp>: Third, First, Alpha,
+Second et enfin Beta.
 
 En pratique, très peu de modules connus font usage de l'HM. La plupart
 préfèrent choisir l'inclusion d'une classe dans une autre plutôt que
-l'HM. C'est pourquoi notre objet Person I<contient> un objet Fullname. Cela ne
-veut pas dire qu'il en I<est> un.
+l'HM. C'est pourquoi notre objet Person I<contient> un objet
+Fullname. Cela ne veut pas dire qu'il en I<est> un.
 
 Par contre, il y a un domaine où l'HM de Perl est très répanduE<nbsp>: lorsqu'une
 classe emprunte des méthodes à une autre classe. C'est assez commun
@@ -1099,7 +1103,7 @@ Nought::new(), ce qui est sûrement une mauvaise chose.
 
 Ne serait-ce pas pratique si tous les objets héritaient d'une même classe de
 base ? Ainsi, on pourrait avoir des méthodes communes à tous les objets sans
-avoir à ajouter explicitement cette classe dans chaque tableau @ISA. EN fait,
+avoir à ajouter explicitement cette classe dans chaque tableau @ISA. En fait,
 cela existe déjà. Vous ne le voyez pas, mais Perl suppose tacitement qu'il y a
 un élément supplémentaire à la fin de @ISAE<nbsp>: la classe UNIVERSAL. Dans la
 version 5.003, il n'y avait aucune méthode prédéfinie dans cette classe, mais
@@ -1150,6 +1154,68 @@ Et il sera sûr que vous avez au moins ce numéro de version. Ce n'est pas la
 même chose que d'exiger un numéro de version précis. Actuellement, aucun
 mécanisme n'existe pour installer simultanément de multiples versions d'un
 même module. Lamentable.
+
+=head2 Approndissements de quelques détails de UNIVERSAL
+
+Il est tout à fait possible (même si c'est le plus souvent
+contre-indiqué) d'ajouter de noms de packages dans C<@UNIVERSAL::ISA>.
+Ces packages seront alors implicitement hérités pour toutes les
+classes, comme l'est C<UNIVERSAL>. En revanche, ni C<UNIVERSAL> ni
+aucun de ses parents ne sont des classes de base explicites des
+objets. Essayons de clarifier cela en posant ce qui S<suit :>
+
+    @UNIVERSAL::ISA = ('REALLYUNIVERSAL');
+
+    package REALLYUNIVERSAL;
+    sub special_method { return "123" }
+
+    package Foo;
+    sub normal_method { return "321" }
+
+L'appel à C<< Foo->special_method() >> retournera "123" mais les
+appels C<< Foo->isa('REALLYUNIVERSAL') >> et
+C<< Foo->isa('UNIVERSAL') >> retourneront la valeur fausse.
+
+Même si votre classe utilise un ordre de résolution non-standard pour
+retrouver ses méthodes tel l'ordre C3 (voir L<mro>), la résolution des
+méthodes via C<UNIVERSAL> / C<@UNIVERSAL::ISA> restera celle par
+défaut (en profondeur d'abord et de gauche à droite) et n'arrivera que
+si votre résolution via C3 n'aboutit pas.
+
+Tout ce qu'on vient d'exposer ci-dessus est sûrement plus
+compréhensible en étudiant ce qui se passe réellement lors de la
+recherche d'une méthode et qui ressemble approximativement au
+pseudo-code S<suivant :>
+
+   get_mro(class) {
+       # recurses down the @ISA's starting at class,
+       # builds a single linear array of all
+       # classes to search in the appropriate order.
+       # The method resolution order (mro) to use
+       # for the ordering is whichever mro "class"
+       # has set on it (either default (depth first
+       # l-to-r) or C3 ordering).
+       # The first entry in the list is the class
+       # itself.
+   }
+
+   find_method(class, methname) {
+       foreach $class (get_mro(class)) {
+           if($class->has_method(methname)) {
+               return ref_to($class->$methname);
+           }
+       }
+       foreach $class (get_mro(UNIVERSAL)) {
+           if($class->has_method(methname)) {
+               return ref_to($class->$methname);
+           }
+       }
+       return undef;
+   }
+
+En revanche, le code qui implémente C<UNIVERSAL::isa> ne cherche pas
+dans C<UNIVERSAL> lui-même. Il explore uniquement le véritable C<@ISA>
+du package.
 
 =head1 Autre représentation d'objet
 
@@ -1812,7 +1878,7 @@ version originale (voir ci-dessus).
 =head2 Version
 
 Cette traduction française correspond à la version anglaise distribuée avec
-perl 5.8.8.  Pour en savoir plus concernant ces traductions, consultez
+perl 5.10.0.  Pour en savoir plus concernant ces traductions, consultez
 L<http://perl.enstimac.fr/>.
 
 =head2 Traducteur

@@ -80,6 +80,10 @@ des fonctions B<en dehors> de votre code Perl, telle que
 POSIX::system, et seront donc à même d'exécuter n'importe quel code
 externe.
 
+=item *
+
+Les clés des tables de hachage ne sont B<jamais> souillées.
+
 =back
 
 Pour des raisons d'efficacité, Perl a un point de vue très
@@ -90,7 +94,7 @@ n'est pas affectée par des données souillées.
 
 Puisque la sûreté est associée à chaque valeur scalaire, certains
 éléments d'un tableau peuvent être souillés et d'autres pas. Les clés
-d'une table de hachage ne sont jamais souillées.
+d'une table de hachage ne sont B<jamais> souillées.
 
 Par exempleE<nbsp>:
 
@@ -540,13 +544,13 @@ Algorithm::FastPermute) ou pour des applications de cryptographie.
 =item *
 
 Les expressions rationnelles - Le moteur d'expression rationnelle de
-Perl est aussi appelé NFA (Non-Finite Automaton - Automate non fini)
-ce qui signifie, entre autres, qu'il peut facilement consommer
-énormément de temps et d'espace mémoire si une expression rationnelle
-est reconnaissable de nombreuses manières différentes. Des expressions
-rationnelles correctement conçues peuvent empêcher cela mais c'est
-loin d'être facile (nous vous recommandons la lecture du livre
-"Mastering Regular Expressions", voir aussi
+Perl est aussi appelé NFA (Non-deterministic Finite Automaton -
+Automate fini non déterministe) ce qui signifie, entre autres, qu'il
+peut facilement consommer énormément de temps et d'espace mémoire si
+une expression rationnelle est reconnaissable de nombreuses manières
+différentes. Des expressions rationnelles correctement conçues peuvent
+empêcher cela mais c'est loin d'être facile (nous vous recommandons la
+lecture du livre "Mastering Regular Expressions", voir aussi
 L<perlfaq2>). L'utilisation d'espace mémoire trop important se
 manifeste par un dépassement de capacité de mémoire (out of memory) de
 Perl.

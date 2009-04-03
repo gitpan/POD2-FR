@@ -4,9 +4,11 @@
 Ce document est au format Pod. Pour le lire, il vous faut utiliser un
 formateur de Pod comme "perldoc perlpod".
 
-=head1 NAME/NOM X<POD> X<plain old documentation> X<bonne vieille documentation>
+=head1 NAME/NOM
 
 perlpod - Le format Pod (plain old documentation), la bonne vieille documentation
+
+X<POD> X<plain old documentation> X<bonne vieille documentation>
 
 =head1 DESCRIPTION
 
@@ -22,7 +24,9 @@ les paragraphes L<ordinaires|/"Les paragraphes ordinaires">, les
 paragraphes L<de commande|/"Les paragraphes de commande"> et les
 paragraphes L<verbatim|/"Les paragraphes verbatim">.
 
-=head2 Les paragraphes ordinaires X<POD, paragraphes ordinaires>
+=head2 Les paragraphes ordinaires
+
+X<POD, paragraphes ordinaires>
 
 La plupart des paragraphes d'une documentation sont des blocs de texte
 ordinaires, comme celui-ci. Il vous suffit de taper votre texte sans
@@ -37,7 +41,9 @@ mise en forme pour le B<gras>, l'I<italique>, le style C<code>, les
 L<liens|perlfaq> et autres. Ces codes sont expliqués dans la section
 L<Codes de mise en forme|"Codes de mise en forme">, ci-dessous.
 
-=head2 Les paragraphes verbatim X<POD, paragraphes verbatim> X<POD, paragraphes mot pour mot> X<verbatim>
+=head2 Les paragraphes verbatim
+
+X<POD, paragraphes verbatim> X<POD, paragraphes mot pour mot> X<verbatim>
 
 Les paragraphes verbatim (mot pout mot) sont habituellement utilisés
 pour présenter des blocs de code ou d'autres bouts de texte qui ne
@@ -52,7 +58,9 @@ alignées sur 8 caractères. Il n'existe aucun code de mise en forme et,
 par conséquent, aucune possibilité de faire de l'italique ou quoi que
 ce soit d'autre. Un \ est \ et rien d'autre.
 
-=head2 Les paragraphes de commande X<POD, commande>
+=head2 Les paragraphes de commande
+
+X<POD, commande>
 
 Un paragraphe de commande est utilisé pour spécifier des traitements
 spéciaux sur des parties du texte comme les titres ou les listes.
@@ -82,6 +90,7 @@ Voici en détail des explications pour chacune S<d'elles :>
 =over
 
 =item C<=head1 I<Texte du titre>>
+
 X<=head1> X<=head2> X<=head3> X<=head4> X<head1> X<head2> X<head3> X<head4>
 
 =item C<=head2 I<Texte du titre>>
@@ -108,6 +117,7 @@ Ces codes sont expliqués dans la section L<Codes de mise en
 forme|"Codes de mise en forme">, ci-dessous.
 
 =item C<=over I<niveauindentation>>
+
 X<=over> X<=item> X<=back> X<over> X<item> X<back>
 
 =item C<=item I<texte...>>
@@ -169,6 +179,7 @@ choisir le type de liste.
 =back
 
 =item C<=cut>
+
 X<=cut> X<cut>
 
 Pour terminer un bloc Pod, utilisez une ligne vide puis une ligne
@@ -178,6 +189,7 @@ recommence. (La ligne vide avant le C<=cut> n'est pas techniquement
 indispensable mais beaucoup de vieux traducteurs Pod en ont besoin.)
 
 =item C<=pod>
+
 X<=pod> X<pod>
 
 La commande C<=pod> en elle-même ne sert pas à grand chose si ce n'est
@@ -206,6 +218,7 @@ paragraphe ordinaire ou un paragraphe verbatim. Par S<exemple :>
   =cut
 
 =item C<=begin I<nomformat>>
+
 X<=begin> X<=end> X<=for> X<begin> X<end> X<for>
 
 =item C<=end I<nomformat>>
@@ -286,6 +299,7 @@ forme normale (c.-à-d. qui n'est pas un paragraphe normal mais
 pourrait être utilisé, par exemple, comme note de bas de page).
 
 =item C<=encoding I<codage>>
+
 X<=encoding> X<encoding> X<codage>
 
 Cette commande permet de déclarer le codage utilisé dans le
@@ -336,7 +350,10 @@ Quelques exemples de S<listes :>
 
  =back
 
-=head2 Codes de mise en forme X<POD, code de mise en forme> X<code de mise en forme> X<POD, séquence interne> X<séquence interne>
+=head2 Codes de mise en forme
+
+X<POD, code de mise en forme> X<code de mise en forme>
+X<POD, séquence interne> X<séquence interne>
 
 Dans les paragraphes ordinaires et dans certains paragraphes de
 commande, plusieurs codes de mise en forme (appelés aussi S<«
@@ -349,6 +366,7 @@ séquences> S<internes»>) peuvent être S<utilisés :>
 =over
 
 =item C<IE<lt>texteE<gt>> -- texte en italique
+
 X<I> X<< IZ<><> >> X<POD, code de mise en forme, italique> X<italique>
 
 Utilisé pour mettre en évidence (C<faites IE<lt>attention !E<gt>>) et
@@ -364,6 +382,7 @@ pour mettre en évidence (C<faites BE<lt>attention !E<gt>>) et autres
 (C<cette propriété s'appelle BE<lt>l'autovivificationE<gt>>).
 
 =item C<CE<lt>codeE<gt>> -- du code
+
 X<C> X<< CZ<><> >> X<POD, code de mise en forme, code> X<code>
 
 Présente le code dans une police type machine à écrire ou donne une
@@ -371,6 +390,7 @@ indication que le texte est un programme (C<CE<lt>gmtime($^T)E<gt>>)
 ou quelque chose liée à l'ordinateur (C<CE<lt>drwxr-xr-xE<gt>>).
 
 =item C<LE<lt>nomE<gt>> -- un hyperlien
+
 X<L> X<< LZ<><> >> X<POD, code de mise en forme, hyperlien> X<hyperlien>
 
 Il y a différentes syntaxes, présentées ci-dessous. Dans ces syntaxes,
@@ -429,15 +449,15 @@ exemple C<LE<lt>Messages d'erreurs de Perl|perldiagE<gt>>.
 C<LE<lt>texte|nom/"section"E<gt>> ou C<LE<lt>texte|nom/sectionE<gt>>
 
 Lié ce texte à la section de la page de documentation dont le nom est
-fourni. Par exemple C<LE<lt>Instructions SWITCH|perlsyn/"BLOCs de base
-et instruction switch"E<gt>>.
+fourni. Par exemple
+C<LE<lt>postfix "if"|perlsyn/"Statement Modifiers"E<gt>>
 
 =item *
 
 C<LE<lt>texte|/"section"E<gt>> or C<LE<lt>texte|/sectionE<gt>> ou C<LE<lt>texte|"section"E<gt>>
 
-Lié ce texte à la section de ce même document. Par exemple C<LE<lt>les
-différents attributs|/"Données membres"E<gt>>
+Lié ce texte à la section de ce même document. Par exemple
+C<< LE<lt>les différents attributs|/"Données membres"E<gt> >>
 
 =back
 
@@ -457,6 +477,7 @@ C<LE<lt>text|scheme:...E<gt>>.
 =back
 
 =item C<EE<lt>entitéE<gt>> -- un caractère nommé
+
 X<E> X<< EZ<><> >> X<POD, formatting code, entité> X<entité>
 
 Très similaire aux S<« entités »> HTML/XML C<&I<foo>;>.
@@ -516,17 +537,20 @@ place de C<EE<lt>eacuteE<gt>>.)
 =back
 
 =item C<FE<lt>nomfichierE<gt>> -- utilisé pour un nom de fichier
+
 X<F> X<< FZ<><> >> X<POD, code de mise en forme, nom de fichier> X<nom de fichier>
 
 Typiquement affiché en italique. S<Exemple :> C<FE<lt>.cshrcE<gt>>
 
 =item C<SE<lt>texteE<gt>> -- texte contenant des espaces non sécables
+
 X<S> X<< SZ<><> >> X<POD, code de mise en forme, espace insécable> X<espaces insécable>
 
 Cela siginifie que les mots du I<texte> ne doivent pas être séparés
 sur plusieurs lignes. S<Exemple :> S<C<SE<lt>$x ? $y : $zE<gt>>>.
 
 =item C<XE<lt>nom de sujetE<gt>> -- une point d'entrée d'index
+
 X<X> X<< XZ<><> >> X<POD, code de mise en forme, point d'entrée d'index> X<point d'entrée d'index>
 
 Ce code est ignoré par la plupart des traducteurs mais certains
@@ -534,6 +558,7 @@ peuvent l'utiliser pour construire un index. Il est toujours présenté
 comme la chaîne vide. S<Exemple :> C<XE<lt>URL absoluE<gt>>
 
 =item C<ZE<lt>E<gt>> -- un code de mise en forme nul (sans effet)
+
 X<Z> X<< ZZ<><> >> X<POD, code de mise en forme, nul> X<nul>
 
 C'est rarement utilisé. C'est l'un des moyens pour empêcher
@@ -615,7 +640,9 @@ Tout cela est actuellement accepté par pod2text (Pod::Text), pod2man
 (Pod::Man) et tout autre traducteur pod2xxx et Pod::Xxxx qui utilise
 Pod::Parser version 1.093 ou supérieure.
 
-=head2 L'objectif X<POD, l'objectif>
+=head2 L'objectif
+
+X<POD, l'objectif>
 
 L'objectif est la simplicité d'utilisation, pas la puissance
 expressive. Les paragraphes ont l'air de paragraphes (des blocs) pour
@@ -749,7 +776,7 @@ Larry Wall, Sean M. Burke
 =head2 Version
 
 Cette traduction française correspond à la version anglaise distribuée avec
-perl 5.8.8.  Pour en savoir plus concernant ces traductions, consultez
+perl 5.10.0.  Pour en savoir plus concernant ces traductions, consultez
 L<http://perl.enstimac.fr/>.
 
 =head2 Traducteur

@@ -6,8 +6,8 @@ perl - Langage pratique d'extraction et de rapport
 
 =head1 SYNOPSIS
 
-B<perl> S<[ B<-sTtuUWX> ]>
-        S<[ B<-hv> ] [ B<-V>[:I<configvar>] ]>
+B<perl>
+        S<[ B<-sTtuUWX> ] [ B<-hv> ] [ B<-V>[:I<configvar>] ]>
         S<[ B<-cw> ] [ B<-d>[B<t>][:I<debugger>] ] [ B<-D>[I<number/list>] ]>
         S<[ B<-pna> ] [ B<-F>I<pattern> ] [ B<-l>[I<octal>] ] [ B<-0>[I<octal/hexadecimal>] ]>
         S<[ B<-I>I<dir> ] [ B<-m>[B<->]I<module> ] [ B<-M>[B<->]I<'module...'> ] [ B<-f> ]>
@@ -17,6 +17,39 @@ B<perl> S<[ B<-sTtuUWX> ]>
         S<[ B<-x>[I<dir>] ]>
         S<[ B<-i>[I<extension>] ]>
         S<[ B<-e> I<'command'> ] [ B<--> ] [ I<programfile> ] [ I<argument> ]...>
+
+=head1 DESCRIPTION
+
+Perl est un langage optimisé pour extraire des informations de fichiers texte
+et imprimer des rapports basés sur ces informations. C'est aussi un bon langage
+pour de nombreuses tâches d'administration système. Il est écrit dans le but 
+d'être pratique (simple à utiliser, efficace, complet) plutôt que beau (petit,
+élégant, minimaliste).
+
+Perl combine (du point de vue de l'auteur) les meilleures fonctionnalités de
+C, B<sed>, B<awk> et B<sh>, de manière telle que les personnes familières de
+ces langages ne devraient avoir aucune difficulté avec celui-ci. (Les
+historiens pourront aussi noter quelques vestiges de B<csh>, de Pascal et même
+de BASIC-PLUS). La syntaxe se rapproche beaucoup de celle du C.  Contrairement
+à la plupart des utilitaires Unix, Perl ne limite pas arbitrairement la taille
+des données -- si vous avez assez de mémoire, Perl peut copier l'intégralité
+d'un fichier dans une seule chaîne de caractères.  Il n'y a pas de niveau
+maximum à la récursivité. Et les tables utilisées par les tables de hachage
+(appelées aussi "tableaux associatifs") croissent dès que nécessaire afin de
+garantir un bon niveau de performance. Perl utilise des techniques
+sophistiquées de recherche de motifs pour pouvoir traiter très rapidement de
+très grandes quantités de données. Bien qu'optimisé pour le traitement des
+fichiers textes, Perl peut aussi traiter des données binaires et faire que des
+fichiers DBM soient vus comme des tables de hachage. Les scripts Perl ayant
+leurs setuid bits positionnés sont plus sûrs que des programmes C grâce à des
+mécanismes de suivi de flot de données qui permettent d'éviter de nombreux
+trous de sécurité particulièrement stupides.
+
+Face à un problème pour lequel vous auriez habituellement utilisé B<sed>,
+B<awk> ou B<sh>, mais qui dépasse leurs capacités ou qui doit fonctionner un
+peu plus rapidement et pour lequel vous ne voulez pas écrire en C, alors Perl
+est pour vous. Il existe aussi des convertisseurs pouvant transformer vos
+scripts B<sed> et B<awk> en scripts Perl.
 
 Si vous débutez en Perl, vous devriez commencer par la lecture de L<perlintro>
 qui est une introduction générale destinée aux débutants et qui fournit les
@@ -37,21 +70,21 @@ S<sections :>
     perlreftut      Le très court tutoriel de Mark sur les références
     perldsc         Livre de recettes des structures de données en Perl
     perllol         Manipulation des tableaux de tableaux en Perl
-
+    
     perlrequick     Les expressions rationnelles Perl pour les impatients
     perlretut       Tutoriel des expressions rationnelles en Perl
-
+    
     perlboot        Tutoriel pour l'orienté objet à destination des débutants
     perltoot        Tutoriel orienté objet de Tom
     perltooc        Le tutoriel de Tom pour les données de classe OO en Perl
     perlbot         Collection de trucs et astuces pour Objets (the BOT)
-
+    
     perlstyle       Comment (bien) écrire du Perl
-
+    
     perlcheat       Anti-sèche Perl 5
     perltrap        Les pièges de Perl pour l'imprudent
     perldebtut      Tutoriel de débogage de Perl
-
+    
     perlfaq         Foire aux questions sur Perl
       perlfaq1      Questions d'ordre général sur Perl
       perlfaq2      Trouver et apprendre Perl
@@ -80,25 +113,29 @@ S<sections :>
     perldebug       Débogage de Perl
     perlvar         Variables prédéfinies en Perl
     perlre          Les expressions rationnelles en Perl
+    perlrebackslash Les séquences backslash des expressions rationnelles
+    perlrecharclass Les classes de caractères des expressions rationnelles
     perlreref       Résumé rapide des expressions rationnelles en Perl
     perlref         Références et structures de données imbriquées en Perl
     perlform        Formats Perl
     perlobj         Objets de Perl
     perltie         Comment cacher un objet d'une classe derrière une simple variable
       perldbmfilter Filtres DBM en Perl
-
+    
     perlipc         Communication inter-processus en Perl (signaux, files d'attente, tubes,
                     sous-processus sûrs, sockets et sémaphores)
     perlfork        Information sur fork() en Perl
     perlnumber      Sémantique des nombres en Perl
-
+    
     perlthrtut      Tutoriel sur les threads en Perl
       perlothrtut   Ancien tutoriel sur les threads en Perl
-
+    
     perlport        Écrire du code Perl portable
     perllocale      Gestion des "locale" en Perl (internationalisation et localisation)
     perluniintro    Introduction Unicode en Perl
     perlunicode     Utilisation Unicode en Perl
+    perlunifaq      FAQ Unicode en Perl
+    perlunitut      Tutoriel Unicode en Perl
     perlebcdic      Comment utiliser Perl sur des plateformes EBCDIC
 
     perlsec         Sécurité de Perl
@@ -108,13 +145,14 @@ S<sections :>
     perlmodstyle    Comment écrire correctement des modules en Perl
     perlmodinstall  Installation des modules CPAN
     perlnewmod      Préparer un module en vue de sa distribution
-
+    perlpragma      Les paquetages utilitaires de la distribution Perl
+    
     perlutil        Utilitaires intégrés dans la distribution Perl
-
+    
     perlcompile     Introduction à la compilation Perl
-
+    
     perlfilter      Filtres de source Perl
-
+    
     perlglossary    Glossaire Perl
 
 =head2 Implémentation et interface avec le langage C
@@ -126,7 +164,9 @@ S<sections :>
     perlclib        Fonctions internes se substituant aux fonctions C standard
     perlguts        Fonctions internes pour réaliser des extensions
     perlcall        Conventions d'appel de Perl depuis le C
-
+    perlreapi       Interface des greffons du moteur d'expressions rationnelles
+    perlreguts      Les entrailles du moteur d'expressions rationnelles
+    
     perlapi         Liste des API Perl (générée automatiquement)
     perlintern      Fonctions internes Perl (générée automatiquement)
     perliol         API C pour pour utiliser les filtres d'E/S de Perl
@@ -138,11 +178,18 @@ S<sections :>
 
     perlbook        Livres concernant Perl
     perltodo        Ce qui reste à faire pour Perl
-
+    
     perldoc         Consulter la documentation Perl au format Pod
-
+    
     perlhist        Les archives de l'histoire de Perl
     perldelta       Nouveautés de la dernière version
+    perl595delta    Nouveautés de la version 5.9.5
+    perl594delta    Nouveautés de la version 5.9.4
+    perl593delta    Nouveautés de la version 5.9.3
+    perl592delta    Nouveautés de la version 5.9.2
+    perl591delta    Nouveautés de la version 5.9.1
+    perl590delta    Nouveautés de la version 5.9.0
+    perl588delta    Nouveautés de la version 5.8.8
     perl587delta    Nouveautés de la version 5.8.7
     perl586delta    Nouveautés de la version 5.8.6
     perl585delta    Nouveautés de la version 5.8.5
@@ -159,7 +206,7 @@ S<sections :>
     perl56delta     Nouveautés de la version 5.6
     perl5005delta   Nouveautés de la version 5.005
     perl5004delta   Nouveautés de la version 5.004
-
+    
     perlartistic    Licence artistique de Perl
     perlgpl         Licence publique générale GNU
 
@@ -198,7 +245,9 @@ S<sections :>
     perlos400       Perl sur plateforme OS/400
     perlplan9       Perl sur plateforme Plan 9
     perlqnx         Perl sur plateforme QNX
+    perlriscos      Perl sur plateforme RISC OS
     perlsolaris     Perl sur plateforme Solaris
+    perlsymbian     Perl sur plateforme Symbian
     perltru64       Perl sur plateforme Tru64
     perluts         Perl sur plateforme UTS
     perlvmesa       Perl sur plateforme VM/ESA
@@ -206,70 +255,21 @@ S<sections :>
     perlvos         Perl sur plateforme Stratus VOS
     perlwin32       Perl sur plateforme Windows
 
-Par défaut, toutes les sections citées précédemment sont installées dans le
-répertoire F</usr/local/man/> (S<N.d.T. :> tous les répertoires cités
-dépendent de votre distribution mais aussi de la traduction que vous
-recherchez).
+Sur les systèmes Debian et dérivés, vous devrez installer le paquetage
+B<perl-doc>. Il contient la majeur partie de la documentation Perl
+standard et le progamme F<perldoc>.
 
-De la documentation supplémentaire sur les modules Perl est disponible.  Par
-défaut, elle est installée dans le répertoire F</usr/local/lib/perl5/man> ou
-dans le sous-répertoire F<man> du répertoire de la bibliothèque Perl. Certains
-de ces documents supplémentaires sont livrés en standard avec Perl, mais vous
-y trouverez aussi la documentation des modules provenant d'autres sources.
+Une documentation complète est disponible dans les modules Perl, tant
+pour les modules distribués directement avec Perl que pour les modules
+tiers empaquetés pas ailleurs ou installés localement.
 
-Vous devez être en mesure de lire la documentation perl avec la commande
-man(1) en ajoutant le répertoire man dans le fichier de démarrage adéquat ou
-en modifiant la variable d'environnement MANPATH. Pour savoir où sont
-installées les pages de manuel, S<tapez :>
-
-    perl -V:man.dir
-
-Si les répertoires ont un ancêtre commun, par exemple F</usr/local/man/man1>
-et F</usr/local/man/man3>, il suffit d'ajouter cet ancêtre (F</usr/local/man>)
-dans le fichier de configuration de man(1) ou dans la variable MANPATH. Si ce
-n'est pas le cas, vous devrez alors tous les ajouter.
-
-Si ça ne marche pas pour une raison quelconque, vous pouvez toujours utiliser
-le script F<perldoc> fourni pour lire les documentations des modules. Vous
-pourriez aussi chercher un programme de remplacement à man(1).
+Vous devriez être en mesure de lire la documentation Perl avec la
+commande man(1) ou via perldoc(1).
 
 Si votre programme a un comportement étrange et que vous ne savez pas où se
 trouve le problème, pour demander à Perl de vous aider, utilisez l'option
 B<-w>. Très souvent Perl vous indiquera l'endroit exact où se trouve le
 problème.
-
-=head1 DESCRIPTION
-
-Perl est un langage optimisé pour extraire des informations de fichiers texte
-et imprimer des rapports basés sur ces informations. C'est aussi un bon langage
-pour de nombreuses tâches d'administration système. Il est écrit dans le but 
-d'être pratique (simple à utiliser, efficace, complet) plutôt que beau (petit,
-élégant, minimaliste).
-
-Perl combine (du point de vue de l'auteur) les meilleures fonctionnalités de
-C, B<sed>, B<awk> et B<sh>, de manière telle que les personnes familières de
-ces langages ne devraient avoir aucune difficulté avec celui-ci. (Les
-historiens pourront aussi noter quelques vestiges de B<csh>, de Pascal et même
-de BASIC-PLUS). La syntaxe se rapproche beaucoup de celle du C.  Contrairement
-à la plupart des utilitaires Unix, Perl ne limite pas arbitrairement la taille
-des données -- si vous avez assez de mémoire, Perl peut copier l'intégralité
-d'un fichier dans une seule chaîne de caractères.  Il n'y a pas de niveau
-maximum à la récursivité. Et les tables utilisées par les tables de hachage
-(appelées aussi "tableaux associatifs") croissent dès que nécessaire afin de
-garantir un bon niveau de performance. Perl utilise des techniques
-sophistiquées de recherche de motifs pour pouvoir traiter très rapidement de
-très grandes quantités de données. Bien qu'optimisé pour le traitement des
-fichiers textes, Perl peut aussi traiter des données binaires et faire que des
-fichiers DBM soient vus comme des tables de hachage. Les scripts Perl ayant
-leurs setuid bits positionnés sont plus sûrs que des programmes C grâce à des
-mécanismes de suivi de flot de données qui permettent d'éviter de nombreux
-trous de sécurité particulièrement stupides.
-
-Face à un problème pour lequel vous auriez habituellement utilisé B<sed>,
-B<awk> ou B<sh>, mais qui dépasse leurs capacités ou qui doit fonctionner un
-peu plus rapidement et pour lequel vous ne voulez pas écrire en C, alors Perl
-est pour vous. Il existe aussi des convertisseurs pouvant transformer vos
-scripts B<sed> et B<awk> en scripts Perl.
 
 Mais il y a plus encore...
 
@@ -453,12 +453,12 @@ savoir pourquoi.
 =head2 Version
 
 Cette traduction française correspond à la version anglaise distribuée avec
-perl 5.8.8.  Pour en savoir plus concernant ces traductions, consultez
+perl 5.10.0.  Pour en savoir plus concernant ces traductions, consultez
 L<http://perl.enstimac.fr/>.
 
 =head2 Traducteur
 
-Marc Carmier <carmier@immortels.frmug.org>. Mise à jour vers Perl 5.8.5 par
+Marc Carmier <carmier@immortels.frmug.org>. Mise à jour vers Perl 5.10.0 par
 Paul Gaborit (Paul.Gaborit arobase enstimac.fr).
 
 =head2 Relecture
